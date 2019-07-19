@@ -9,8 +9,8 @@ const mongo = {
 }
 
 const eth = {
-    url: process.env.ETH_NODE_URL,
-    port: process.env.ETH_NODE_PORT,
+    url: '192.168.1.250',
+    port: 8545,
 }
 
 const btc = {

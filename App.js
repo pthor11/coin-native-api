@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -35,7 +35,11 @@ export default function App() {
 
     const run = async () => {
 
-        const txid = await sendTX({ coin: 'btc', privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
+        // const txid = await sendTX({ coin: 'btc', privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
+
+        const bytesize = await estimateFee({ coin: 'btc', sender: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4" , privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
+
+        const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
 
         const randomPhrase = await getRandomPhrase()
 
@@ -62,7 +66,9 @@ export default function App() {
         setTest({
             randomPhrase,
             testPhrase,
-            txid
+            bytesize,
+            gaslimit,
+            // txid
         })
 
 
@@ -81,8 +87,13 @@ export default function App() {
             <Text>test phrase:</Text>
             <Text>{test ? test.testPhrase.join(' ') : null}</Text>
             <Text> === </Text>
-            <Text>new tx:</Text>
-            <Text>{test ? test.txid : null}</Text>
+            <Text>bytesize btc tx:</Text>
+            <Text>{test ? test.bytesize : null}</Text>
+            <Text> === </Text>
+            <Text>gaslimit eth tx:</Text>
+            <Text>{test ? test.gaslimit : null}</Text>
+            {/* <Text>new tx:</Text>
+            <Text>{test ? test.txid : null}</Text> */}
         </View>
     );
 }
