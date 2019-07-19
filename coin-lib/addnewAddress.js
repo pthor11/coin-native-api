@@ -154,7 +154,7 @@ const phraseToTRX = (phrase, index) => {
     return { address, pubkey, privkey }
 }
 
-export default async (phrase, coin, index) => {
+export default (phrase, coin, index) => {
     switch (coin) {
         case 'bch':
             return phraseToBCH(phrase, index)

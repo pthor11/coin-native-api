@@ -1,9 +1,9 @@
 import getRandomPhrase from './getRandomPhrase'
 import addNewAddress from './addnewAddress'
-import signTX from './signTransaction'
+import sendTX from './sendTransaction'
 
 export {
     getRandomPhrase,
     addNewAddress,
-    signTX
+    sendTX
 }
