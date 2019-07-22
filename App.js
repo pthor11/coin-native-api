@@ -37,9 +37,9 @@ export default function App() {
 
         // const txid = await sendTX({ coin: 'btc', privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
 
-        const bytesize = await estimateFee({ coin: 'btc', sender: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4" , privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
+        const bytesize = await estimateFee({ coin: 'btc', sender: "mnjThbQvU3Xeh2YhiE2MqwgmrZAxq1Rmdi" , privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: 'mnjThbQvU3Xeh2YhiE2MqwgmrZAxq1Rmdi', amount: 0.00001})
 
-        const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
+        // const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
 
         const randomPhrase = await getRandomPhrase()
 
@@ -52,8 +52,8 @@ export default function App() {
         // const etc = await addNewAddress(testPhrase, 'etc', 0)
         // console.log({etc})
 
-        // const trx = await addNewAddress(testPhrase, 'trx', 0)
-        // console.log({trx})
+        // // const trx = await addNewAddress(testPhrase, 'trx', 0)
+        // // console.log({trx})
 
         // const bch = await addNewAddress(testPhrase, 'bch', 0)
         // console.log({bch})
@@ -67,7 +67,7 @@ export default function App() {
             randomPhrase,
             testPhrase,
             bytesize,
-            gaslimit,
+            // gaslimit,
             // txid
         })
 
@@ -89,9 +89,9 @@ export default function App() {
             <Text> === </Text>
             <Text>bytesize btc tx:</Text>
             <Text>{test ? test.bytesize : null}</Text>
-            <Text> === </Text>
+            {/* <Text> === </Text>
             <Text>gaslimit eth tx:</Text>
-            <Text>{test ? test.gaslimit : null}</Text>
+            <Text>{test ? test.gaslimit : null}</Text> */}
             {/* <Text>new tx:</Text>
             <Text>{test ? test.txid : null}</Text> */}
         </View>

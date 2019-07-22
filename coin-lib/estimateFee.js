@@ -10,11 +10,20 @@ const estimateByteSize = async ({sender, privkey, receiver, amount}) => {
         amount = parseInt(100000000 * amount)
 
         const keyPair = bitcoinjs.ECPair.fromWIF(privkey, network)
+        // console.log({keyPair})
+        
+
         const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
         const utxos = utxos_response.data.data.txs
         const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + utxo.value, 0))
 
+        if (balance === 0 || utxos.length === 0) {
+            return 223
+        } 
+
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
+        console.log({inputs})
+        
         const txb = new bitcoinjs.TransactionBuilder(network)
         txb.setVersion(1)
         inputs.forEach(input => {
@@ -23,8 +32,10 @@ const estimateByteSize = async ({sender, privkey, receiver, amount}) => {
         txb.addOutput(receiver, amount)
         txb.addOutput(sender, balance - amount - 223)
         txb.sign(0, keyPair)
-
+        
         const estimate_raw_tx =  txb.build().toHex()
+        console.log({estimate_raw_tx})
+        
         return Buffer.byteLength(estimate_raw_tx, 'hex')
     } catch (err) {
         throw new Error(err)
@@ -47,10 +58,6 @@ const estimateGasLimit = async ({sender, receiver, amount, data}) => {
         console.log(error);   
         throw new Error(error)
     }
-    
-    
-
-    return 'hehe'
 }
 
 export default async ({coin, sender, privkey, receiver, amount, data}) => {
