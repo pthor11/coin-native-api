@@ -13,7 +13,7 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
     const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
     const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
-    //console.log({ sender })
+    // console.log({ sender })
 
     try {
         // Get unspent txs
@@ -22,10 +22,10 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
         //console.log({ utxos })
 
         // Check amount
-        //console.log({ amount })
+        // console.log({ amount })
 
         const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + parseFloat(utxo.value), 0))
-        //console.log({ balance })
+        // console.log({ balance })
 
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
         //console.log({inputs})
@@ -38,8 +38,11 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
             txb.addOutput(sender, balance - amount - feerate * bytesize)
             for (let i = 0; i < inputs.length; i++) {
                 txb.addInput(inputs[i].txid, inputs[i].vout)
+            }
+            for (let i = 0; i < inputs.length; i++) {
                 txb.sign(i, keyPair)
             }
+    
             return txb.build().toHex()
         }
 
@@ -101,7 +104,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
         console.log({ gaslimit: parseInt(gaslimit) })
 
         const tx_data = {
-            // nonce,
+            nonce,
             gasPrice: fee.gasprice,
             gasLimit: gaslimit,
             to: receiver,
