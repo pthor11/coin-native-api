@@ -3,13 +3,13 @@ import { Buffer } from 'buffer'
 import * as  bitcoinjs from 'bitcoinjs-lib'
 import btcRPC from './lib/btcRPC'
 import axios from 'axios'
-const network = bitcoinjs.networks.testnet
+import coinlist from './lib/coinlist'
 
 const sendBTC = async ({privkey, receiver, amount, fee}) => {
     amount = parseInt(100000000 * amount)
 
-    const keyPair = bitcoinjs.ECPair.fromWIF(privkey, network)
-    const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address
+    const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
+    const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
     //console.log({ sender })
 
     try {
@@ -21,41 +21,41 @@ const sendBTC = async ({privkey, receiver, amount, fee}) => {
         // Check amount
         //console.log({ amount })
 
-        const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + utxo.value, 0))
+        const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + parseFloat(utxo.value), 0))
         //console.log({ balance })
 
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
+        //console.log({inputs})
+        
 
         const createRawTX = (feerate = 0, bytesize = 1) => {
-            const txb = new bitcoinjs.TransactionBuilder(network)
+            const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
             txb.setVersion(1)
-            inputs.forEach(input => {
-                txb.addInput(input.txid, input.vout)
-            })
             txb.addOutput(receiver, amount)
             txb.addOutput(sender, balance - amount - feerate * bytesize)
-            txb.sign(0, keyPair)
-
+            for (let i = 0; i < inputs.length; i++) {
+                txb.addInput(inputs[i].txid, inputs[i].vout)
+                txb.sign(i, keyPair)
+            }
             return txb.build().toHex()
         }
 
         let raw_tx
-
+        let bytesize
+        let estimate_raw_tx
         if (!fee.feerate) {
             const feerate_response = await btcRPC('estimatesmartfee', [2])
-            const feerate = parseInt(feerate_response.data.result.feerate * 100000)
-            //console.log({ feerate })
-
-            const estimate_raw_tx = createRawTX(feerate, 223)
-            //console.log({estimate_raw_tx})
-            
-            const bytesize = Buffer.byteLength(estimate_raw_tx, 'hex') 
-            //console.log({bytesize})
-
-            raw_tx = createRawTX(feerate, bytesize)
-            //console.log({raw_tx})
-            
+            fee.feerate = parseInt(feerate_response.data.result.feerate * 100000)
         }
+        //console.log({ feerate: fee.feerate })
+        estimate_raw_tx = createRawTX(fee.feerate, 223)
+        //console.log({estimate_raw_tx})
+        bytesize = Buffer.byteLength(estimate_raw_tx, 'hex') 
+        //console.log({bytesize})
+
+        raw_tx = createRawTX(fee.feerate, bytesize)
+        //console.log({raw_tx})
+        
 
         const result_response = await btcRPC('sendrawtransaction', [raw_tx])
         const result = result_response.data
@@ -67,9 +67,13 @@ const sendBTC = async ({privkey, receiver, amount, fee}) => {
         }
 
     } catch (err) {
-        console.log(err.response.data)
+        //console.log(err)
         throw new Error(err)
     }
+
+}
+
+const sendETH = async ({privkey, receiver, amount, fee}) => {
 
 }
 
@@ -77,8 +81,10 @@ const sendTX = ({ privkey, receiver, amount, fee = {}, coin}) => {
     switch (coin) {
         case 'btc':
             return sendBTC({ privkey, receiver, amount, fee })
+        case 'eth':
+            return sendETH({privkey, receiver, amount, fee})
         default:
-            break;
+            return null
     }
 }
 
