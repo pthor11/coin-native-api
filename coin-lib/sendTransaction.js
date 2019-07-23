@@ -1,7 +1,10 @@
 import '../shim'
 import { Buffer } from 'buffer'
 import * as  bitcoinjs from 'bitcoinjs-lib'
+import ethUtil from './lib/ethereumjs-util'
+import {Transaction} from 'ethereumjs-tx'
 import btcRPC from './lib/btcRPC'
+import ethRPC from './lib/ethRPC'
 import axios from 'axios'
 import coinlist from './lib/coinlist'
 
@@ -74,7 +77,45 @@ const sendBTC = async ({privkey, receiver, amount, fee}) => {
 }
 
 const sendETH = async ({privkey, receiver, amount, fee}) => {
+    amount = amount * 1000000000000000000
+    const sender = `0x` + ethUtil.privateToAddress(`0x` + privkey).toString('hex')
+    console.log({sender})
+    
+    const transactionCount_response = await ethRPC('eth_getTransactionCount', [sender, 'latest'])
+    const nonce = transactionCount_response.data.result
+    console.log({nonce})
+    
+    if (!fee.gasprice) {
+        const gasprice_response = await ethRPC('eth_gasPrice', [])
+        fee.gasprice = gasprice_response.data.result
+    }
+    console.log({gasprice: parseInt(fee.gasprice)})
+    
+    const gaslimit_response = await ethRPC('eth_estimateGas', [{
+        from: sender,
+        to: receiver,
+        value: `0x` + amount.toString(16)
+    }])
+    const gaslimit = gaslimit_response.data.result
+    console.log({gaslimit: parseInt(gaslimit)})
 
+    const tx_data = {
+        nonce,
+        gasPrice: fee.gasprice,
+        gasLimit: gaslimit,
+        to: receiver,
+        value: '0x' + amount.toString(16)
+    }
+
+    const raw_tx = new Transaction(tx_data)
+    raw_tx.sign(Buffer.from(privkey, 'hex'))
+
+    const signedTX = raw_tx.serialize().toString('hex')
+    console.log({signedTX})
+    
+    const tx_response = await ethRPC('eth_sendRawTransaction', [`0x` + signedTX])
+    const tx = tx_response.data.result
+    return tx
 }
 
 const sendTX = ({ privkey, receiver, amount, fee = {}, coin}) => {
