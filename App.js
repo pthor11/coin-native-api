@@ -45,18 +45,18 @@ export default function App() {
         const randomPhrase = await getRandomPhrase()
 
         // const sendtx = await sendTX({
-        //     privkey: "cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c", 
-        //     receiver: "2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs", 
-        //     fee: { feerate: 4 }, 
-        //     amount: 0.00001, 
+        //     privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt", 
+        //     receiver: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4", 
+        //     fee: { feerate: 48 }, 
+        //     amount: 0.0005, 
         //     coin: 'btc'
         // })
 
         const sendtx = await sendTX({
-            privkey: "50e7ffaa593851afefbb19b11348b6c8ee7af3cb0820cd4a23d84350bab08e54", 
+            privkey: "0xabf82ff96b463e9d82b83cb9bb450fe87e6166d4db6d7021d0c71d7e960d5abe", 
             receiver: "0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A", 
             fee: { }, 
-            amount: 0.000001, 
+            amount: 0.000005, 
             coin: 'eth'
         })
 

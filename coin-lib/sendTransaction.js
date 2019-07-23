@@ -82,7 +82,7 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 const sendETH = async ({ privkey, receiver, amount, fee }) => {
     try {
         amount = amount * 1000000000000000000
-        const sender = `0x` + ethUtil.privateToAddress(`0x` + privkey).toString('hex')
+        const sender = `0x` + ethUtil.privateToAddress(privkey).toString('hex')
         console.log({ sender })
 
         const transactionCount_response = await ethRPC('eth_getTransactionCount', [sender, 'pending'])
@@ -112,7 +112,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
         }
 
         const raw_tx = new Transaction(tx_data)
-        raw_tx.sign(Buffer.from(privkey, 'hex'))
+        raw_tx.sign(Buffer.from(privkey.substring(2), 'hex'))
 
         const signedTX = raw_tx.serialize().toString('hex')
         console.log({ signedTX })
