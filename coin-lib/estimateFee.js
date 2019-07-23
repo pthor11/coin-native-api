@@ -7,29 +7,37 @@ import coinlist from './lib/coinlist'
 
 const estimateByteSize = async ({ sender, privkey, receiver, amount }) => {
     try {
+        console.log({sender});
+        console.log({receiver});
+        
         amount = parseInt(100000000 * amount)
-
+        console.log({amount})
+        
         const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
         // console.log({keyPair})
 
 
         const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
         const utxos = utxos_response.data.data.txs
+        
         const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + parseFloat(utxo.value), 0))
 
         if (balance === 0 || utxos.length === 0) {
             return 223
         }
-
+        console.log({balance})
+        
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
-        // console.log({inputs})
+        
 
         const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
         txb.setVersion(1)
         txb.addOutput(receiver, amount)
-        txb.addOutput(sender, balance - amount - feerate * bytesize)
+        txb.addOutput(sender, balance - amount - 223)
         for (let i = 0; i < inputs.length; i++) {
             txb.addInput(inputs[i].txid, inputs[i].vout)
+        }
+        for (let i = 0; i < inputs.length; i++) {
             txb.sign(i, keyPair)
         }
 
