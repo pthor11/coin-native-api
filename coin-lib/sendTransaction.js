@@ -7,6 +7,7 @@ import btcRPC from './lib/btcRPC'
 import ethRPC from './lib/ethRPC'
 import axios from 'axios'
 import coinlist from './lib/coinlist'
+import {eth} from './config'
 
 const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     amount = parseInt(100000000 * amount)
@@ -108,16 +109,17 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
             gasPrice: fee.gasprice,
             gasLimit: gaslimit,
             to: receiver,
-            value: '0x' + amount.toString(16)
+            value: '0x' + amount.toString(16),
         }
 
-        const raw_tx = new Transaction(tx_data)
+        const raw_tx = new Transaction(tx_data, {chain: eth.chain})
         raw_tx.sign(Buffer.from(privkey.substring(2), 'hex'))
 
         const signedTX = raw_tx.serialize().toString('hex')
         console.log({ signedTX })
-
+        
         const tx_response = await ethRPC('eth_sendRawTransaction', [`0x` + signedTX])
+        console.log(tx_response.data)
         
         return tx_response.data.result ? tx_response.data.result : tx_response.data.error.message
     } catch (err) {

@@ -54,8 +54,8 @@ export default function App() {
 
         const sendtx = await sendTX({
             privkey: "0xabf82ff96b463e9d82b83cb9bb450fe87e6166d4db6d7021d0c71d7e960d5abe", 
-            receiver: "0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A", 
-            fee: { }, 
+            receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023", 
+            fee: {gasprice: 1000000000 }, 
             amount: 0.000005, 
             coin: 'eth'
         })

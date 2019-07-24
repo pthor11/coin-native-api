@@ -11,7 +11,9 @@ const mongo = {
 const eth = {
     url: '192.168.1.250',
     port: 8545,
+    chain: 'kovan'
 }
+
 
 const btc = {
     url: '192.168.1.250',
