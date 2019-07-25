@@ -86,7 +86,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
         const sender = `0x` + ethUtil.privateToAddress(privkey).toString('hex')
         console.log({ sender })
 
-        const transactionCount_response = await ethRPC('eth_getTransactionCount', [sender, 'pending'])
+        const transactionCount_response = await ethRPC('eth_getTransactionCount', [sender, 'latest'])
         const nonce = transactionCount_response.data.result
         console.log({ nonce })
 
@@ -117,7 +117,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
 
         const signedTX = raw_tx.serialize().toString('hex')
         console.log({ signedTX })
-        
+
         const tx_response = await ethRPC('eth_sendRawTransaction', [`0x` + signedTX])
         console.log(tx_response.data)
         
