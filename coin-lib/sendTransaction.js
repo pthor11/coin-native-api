@@ -6,15 +6,17 @@ import { Transaction } from 'ethereumjs-tx'
 import btcRPC from './lib/btcRPC'
 import ethRPC from './lib/ethRPC'
 import axios from 'axios'
+import BN from 'bignumber.js'
 import coinlist from './lib/coinlist'
-import {eth} from './config'
+import { eth } from './config'
 
 const sendBTC = async ({ privkey, receiver, amount, fee }) => {
-    amount = parseInt(100000000 * amount)
+    amount = new BN(amount).multipliedBy(100000000).toNumber()
+    console.log({ amount })
 
     const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
     const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
-    // console.log({ sender })
+    console.log({ sender })
 
     try {
         // Get unspent txs
@@ -25,7 +27,7 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
         // Check amount
         // console.log({ amount })
 
-        const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + parseFloat(utxo.value), 0))
+        const balance = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).multipliedBy(100000000)
         // console.log({ balance })
 
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
@@ -36,14 +38,14 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
             const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
             txb.setVersion(1)
             txb.addOutput(receiver, amount)
-            txb.addOutput(sender, balance - amount - feerate * bytesize)
+            txb.addOutput(sender, new BN(balance).minus(amount).minus(feerate * bytesize).toNumber())
             for (let i = 0; i < inputs.length; i++) {
                 txb.addInput(inputs[i].txid, inputs[i].vout)
             }
             for (let i = 0; i < inputs.length; i++) {
                 txb.sign(i, keyPair)
             }
-    
+
             return txb.build().toHex()
         }
 
@@ -52,16 +54,18 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
         let estimate_raw_tx
         if (!fee.feerate) {
             const feerate_response = await btcRPC('estimatesmartfee', [2])
-            fee.feerate = parseInt(feerate_response.data.result.feerate * 100000)
+            fee.feerate = new BN(feerate_response.data.result.feerate).multipliedBy(100000).toNumber()
         }
-        //console.log({ feerate: fee.feerate })
+        console.log({ feerate: fee.feerate })
+
         estimate_raw_tx = createRawTX(fee.feerate, 223)
-        //console.log({estimate_raw_tx})
+        console.log({estimate_raw_tx})
+
         bytesize = Buffer.byteLength(estimate_raw_tx, 'hex')
-        //console.log({bytesize})
+        console.log({bytesize})
 
         raw_tx = createRawTX(fee.feerate, bytesize)
-        //console.log({raw_tx})
+        console.log({raw_tx})
 
 
         const result_response = await btcRPC('sendrawtransaction', [raw_tx])
@@ -82,7 +86,9 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
 const sendETH = async ({ privkey, receiver, amount, fee }) => {
     try {
-        amount = amount * 1000000000000000000
+        amount = new BN(amount).multipliedBy(1000000000000000000).toNumber()
+        console.log({ amount })
+
         const sender = `0x` + ethUtil.privateToAddress(privkey).toString('hex')
         console.log({ sender })
 
@@ -101,6 +107,8 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
             to: receiver,
             value: `0x` + amount.toString(16)
         }])
+        console.log('gaslimit_response', gaslimit_response.data)
+
         const gaslimit = gaslimit_response.data.result
         console.log({ gaslimit: parseInt(gaslimit) })
 
@@ -112,7 +120,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
             value: '0x' + amount.toString(16),
         }
 
-        const raw_tx = new Transaction(tx_data, {chain: eth.chain})
+        const raw_tx = new Transaction(tx_data, { chain: eth.chain })
         raw_tx.sign(Buffer.from(privkey.substring(2), 'hex'))
 
         const signedTX = raw_tx.serialize().toString('hex')
@@ -120,7 +128,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
 
         const tx_response = await ethRPC('eth_sendRawTransaction', [`0x` + signedTX])
         console.log(tx_response.data)
-        
+
         return tx_response.data.result ? tx_response.data.result : tx_response.data.error.message
     } catch (err) {
         throw new Error(err.response.data)
