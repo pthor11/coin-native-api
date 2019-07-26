@@ -1,5 +1,6 @@
 import '../shim'
 import { Buffer } from 'buffer'
+import BN from 'bignumber.js'
 import * as  bitcoinjs from 'bitcoinjs-lib'
 import rpc from './lib/ethRPC'
 import axios from 'axios'
@@ -7,11 +8,12 @@ import coinlist from './lib/coinlist'
 
 const estimateByteSize = async ({ sender, privkey, receiver, amount }) => {
     try {
-        console.log({sender});
-        console.log({receiver});
-        
-        amount = parseInt(100000000 * amount)
-        console.log({amount})
+        const amount_bn_btc = new BN(amount)
+        if (amount_bn_btc._isBigNumber()) {
+            
+        }
+
+        const amount_bn_sat = amount_bn_btc.multipliedBy(100000000)
         
         const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
         // console.log({keyPair})
@@ -69,12 +71,16 @@ const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
 }
 
 export default async ({ coin, sender, privkey, receiver, amount, data }) => {
+    if (!coin || !sender || !privkey || !receiver || !amount) {
+        return Promise.reject({code: 4000})
+    }
+
     switch (coin) {
         case 'btc':
             return estimateByteSize({ sender, privkey, receiver, amount })
         case 'eth':
             return estimateGasLimit({ sender, receiver, amount, data })
         default:
-            break;
+            return Promise.reject({code: 4001})
     }
 }

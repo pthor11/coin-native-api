@@ -39,28 +39,35 @@ export default function App() {
 
         // const bytesize = await estimateFee({ coin: 'btc', sender: "mmbkkktHcJQS6p9FsbEc3vrK9NYLwuVzaD", privkey: 'cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt', receiver: 'mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4', amount: 0.00002 })
         // console.log({bytesize})
-        
+
         // const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
 
         const randomPhrase = await getRandomPhrase()
 
-        const sendtx = await sendTX({
-            privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt", 
-            receiver: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4", 
-            fee: { feerate: 48 }, 
-            amount: 0.0005, 
-            coin: 'btc'
-        })
-
         // const sendtx = await sendTX({
-        //     privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8", 
-        //     receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023", 
-        //     // fee: {gasprice: 1000000000, }, 
-        //     amount: 0.00007, 
-        //     coin: 'eth'
+        //     privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt", 
+        //     receiver: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4", 
+        //     fee: { feerate: 48 }, 
+        //     amount: 0.0005, 
+        //     coin: 'btc'
         // })
 
-        console.log({ sendtx })
+        try {
+            const sendtx = await sendTX({
+                privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
+                receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
+                fee: { gasprice: 10000000000, },
+                amount: 0.000528,
+                coin: 'eth'
+            })
+
+            console.log({ sendtx })
+
+        } catch (error) {
+            console.log(error)
+            
+        }
+
 
 
         // const btc = await addNewAddress(testPhrase, 'btc', 0)
