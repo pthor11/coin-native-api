@@ -5,117 +5,75 @@ import ethUtil from './lib/ethereumjs-util'
 import { Transaction } from 'ethereumjs-tx'
 import btcRPC from './lib/btcRPC'
 import ethRPC from './lib/ethRPC'
-import axios from 'axios'
+import estimateFee from './estimateFee'
 import BN from 'bignumber.js'
-import CoinSelect from 'coinselect'
 import coinlist from './lib/coinlist'
 import { eth } from './config'
 
 const sendBTC = async ({ privkey, receiver, amount, fee }) => {
-    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
-    console.log({ amount: amount_bn_sat.toNumber() })
 
-    const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
-    const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
-    console.log({ sender })
-
+    let keyPair
+    let sender
     try {
-        // Get unspent txs
-        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
-        let utxos = utxos_response.data.data.txs
-        // console.log({ utxos })
-        
-        // Check amount
-        // console.log({ amount })
-
-        const balance_bn_sat = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).multipliedBy(100000000)
-        console.log({ balance_bn_sat })
-
-        const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
-        console.log({inputs})
-
-
-        const createRawTX = (vinputs, voutputs, fee) => {
-            // console.log({feerate, bytesize})
-            
-            const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
-            txb.setVersion(1)
-            voutputs.forEach(output => {
-                if (!output.address) {
-                    output.address = sender
-                }
-                txb.addOutput(output.address, output.value)
-            })
-            // txb.addOutput(receiver, amount_bn_sat.toNumber())
-            // txb.addOutput(sender, balance_bn_sat.minus(amount_bn_sat).minus(fee).toNumber())
-            vinputs.forEach(input => {
-                txb.addInput(input.txId, input.vout)
-            })
-            for (let i = 0; i < inputs.length; i++) {
-                txb.sign(i, keyPair)
-            }
-
-            return txb.build().toHex()
-        }
-
-        // let raw_tx
-        // let bytesize
-        // let estimate_raw_tx
-        
-
-        if (!fee.feerate) {
-            try {
-                const feerate_response = await btcRPC('estimatesmartfee', [2])
-                console.log(feerate_response.data)
-                
-                fee.feerate = new BN(feerate_response.data.result.feerate).multipliedBy(100000).toNumber()    
-            } catch (error) {
-                console.log(error.response.data)
-                
-            }
-            
-        }
-        console.log({ feerate: fee.feerate })
-
-
-        utxos = utxos.map(utxo => {return {txId: utxo.txid, vout: utxo.output_no, value: new BN(utxo.value).multipliedBy(100000000).toNumber()}})
-        const targets = [
-            {
-                address: receiver,
-                value: amount_bn_sat.toNumber()
-            }
-        ]
-
-        console.log({utxos})
-        console.log({targets})
-        
-        const aa = CoinSelect(utxos, targets, 1)
-        console.log({fee: aa.fee});
-        console.log({inputs: aa.inputs});
-        console.log({outputs: aa.outputs});
-        // process.exit(0)
-
-        raw_tx = createRawTX(aa.inputs, aa.outputs, aa.fee)
-        console.log({ raw_tx })
-
-        console.log((await btcRPC('getnetworkinfo', [])).data)
-        
-
-        const result_response = await btcRPC('sendrawtransaction', [raw_tx])
-
-        const result = result_response.data
-
-        if (!result.err || result.result) {
-            return result.result
-        } else {
-            throw new Error(err)
-        }
-
-    } catch (err) {
-        console.log(err.response.data)
-        throw new Error(err)
+        keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
+        sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
+    } catch (error) {
+        return Promise.reject({ code: 9003 })
     }
 
+    // let bytesize
+    let vinputs
+    let bytesize_bn_byte
+    let balance_bn_sat
+    try {
+        const { bytesize, data: { inputs, balance } } = await estimateFee({ coin: 'btc', sender, receiver, amount })
+        bytesize_bn_byte = new BN(bytesize)
+        balance_bn_sat = new BN(balance).multipliedBy(100000000)        
+        vinputs = inputs
+    } catch (error) {
+        return Promise.reject(error)
+    }
+
+    let feerate_bn_sat
+    if (fee.feerate) {
+        feerate_bn_sat = new BN(bytesize_bn_byte)
+    } else {
+        try {
+            const response = await btcRPC('estimatesmartfee', [2])
+            feerate_bn_sat = new BN(response.data.result.feerate).multipliedBy(100000)
+        } catch (error) {
+            return Promise.reject({ code: 9011 })
+        }
+    }
+    console.log({ feerate_bn_sat });
+
+    const fee_bn_sat = feerate_bn_sat.multipliedBy(bytesize_bn_byte)
+    console.log({ fee_bn_sat })
+
+    const estimatedFee = bytesize_bn_byte.multipliedBy(feerate_bn_sat)
+
+    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
+
+    const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
+    txb.setVersion(1)
+    txb.addOutput(receiver, amount_bn_sat.toNumber())
+    txb.addOutput(sender, balance_bn_sat.minus(amount_bn_sat).minus(estimatedFee).toNumber())
+
+    vinputs.forEach(input => {
+        txb.addInput(input.txid, input.vout)
+    })
+    for (let i = 0; i < vinputs.length; i++) {
+        txb.sign(i, keyPair)
+    }
+
+    const raw_tx = txb.build().toHex()
+
+    try {
+        const response = await btcRPC('sendrawtransaction', [raw_tx])
+        return response.data ? Promise.resolve(response.data.result) : Promise.reject({code: 9010})
+    } catch (error) {
+        Promise.reject({code: 9010})
+    }
 }
 
 const sendETH = async ({ privkey, receiver, amount, fee }) => {
@@ -159,10 +117,10 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
                 const gasprice_response = await ethRPC('eth_gasPrice', [])
                 if (!gasprice_response.data) {
                     return Promise.reject({ code: 9006 })
-                } 
+                }
                 fee.gasprice = gasprice_response.data.result
                 // console.log({gasprice: fee.gasprice})
-                
+
             } catch (error) {
                 return Promise.reject({ code: 9006 })
             }
@@ -178,13 +136,12 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
                 value: `0x` + amount_bn_wei.toString(16)
             }])
             if (!gaslimit_response.data) {
-                return Promise.reject({code: 9007})
-            } 
+                return Promise.reject({ code: 9007 })
+            }
             gaslimit = gaslimit_response.data.result
-            console.log({gaslimit})
-            
+
         } catch (error) {
-            return Promise.reject({code: 9007})
+            return Promise.reject({ code: 9007 })
         }
         const gasLimit_bn = new BN(gaslimit)
         // console.log({ gaslimit: parseInt(gaslimit) })
@@ -193,16 +150,16 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
         try {
             const balance_response = await ethRPC('eth_getBalance', [sender, 'latest'])
             if (!balance_response.data) {
-                return Promise.reject({code: 9008})
+                return Promise.reject({ code: 9008 })
             }
             balance_bn = new BN(balance_response.data.result)
         } catch (error) {
-            return Promise.reject({code: 9008})
+            return Promise.reject({ code: 9008 })
         }
-        console.log({balance: balance_bn.toNumber()})
+        console.log({ balance: balance_bn.toNumber() })
 
         if (amount_bn_wei.plus(gasPrice_bn).isGreaterThanOrEqualTo(balance_bn)) {
-            return Promise.reject({code: 9009})
+            return Promise.reject({ code: 9009 })
         }
 
         const tx_data = {
@@ -225,13 +182,13 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
             if (txid_response.data.result) {
                 return Promise.resolve(txid_response.data.result)
             } else {
-                return Promise.reject({code: 9010})
+                return Promise.reject({ code: 9010 })
             }
         } catch (error) {
-            return Promise.reject({code: 9010})
+            return Promise.reject({ code: 9010 })
         }
     } catch (err) {
-        return Promise.reject({code: 9010})
+        return Promise.reject({ code: 9010 })
     }
 }
 

@@ -9,7 +9,7 @@ import coinlist from './lib/coinlist'
 
 const estimateByteSize = async ({ sender, receiver, amount }) => {
     const amount_bn_btc = new BN(amount)
-    
+
     if (amount_bn_btc.isNaN()) {
         return Promise.reject({ code: 9002 })
     }
@@ -27,26 +27,28 @@ const estimateByteSize = async ({ sender, receiver, amount }) => {
     }
 
     let utxos = []
+    let balance 
     try {
         const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
         utxos = utxos_response.data.data.txs
+        balance = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).toNumber()
     } catch (error) {
-        return Promise.reject({code: 9008})
+        return Promise.reject({ code: 9008 })
     }
 
-    let inputCount = 0
+    let inputs = []
     let sum_input_value = new BN(0)
     for (let i = 0; i < utxos.length; i++) {
-        const utxo = utxos[i]
+        const utxo = utxos[i]    
+        inputs.push({txid: utxo.txid, vout: utxo.output_no})
         sum_input_value = sum_input_value.plus(new BN(utxo.value))
-        inputCount += 1
         if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_btc)) {
             break
-        } 
+        }
     }
-        
-    return inputCount === 0 ? 0 : inputCount * 148 + 34 * 2 + 10
-    
+
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: {inputs, balance} })
+
 }
 
 const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
@@ -74,9 +76,9 @@ const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
     }
     try {
         const limit = await rpc('eth_estimateGas', [payload, 'latest'])
-        return limit.data.result ? Promise.resolve(new BN(limit.data.result).toNumber()) : Promise.reject({code: 9014})
+        return limit.data.result ? Promise.resolve({gaslimit: new BN(limit.data.result).toNumber()}) : Promise.reject({ code: 9014 })
     } catch (error) {
-        return Promise.reject({code: 9014})
+        return Promise.reject({ code: 9014 })
     }
 }
 
