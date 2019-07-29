@@ -35,20 +35,21 @@ export default function App() {
 
     const run = async () => {
 
-        // const txid = await sendTX({ coin: 'btc', privkey: 'cUi8whzQVGcVEnAs5B8q39NeHr1eHg8ANrGgx5dGxw1THkZ72T8c', receiver: '2Msnku9hwYkJ3GoJeu8hJSxygQiR9YYPmHs', amount: 0.00001})
-
         try {
             const bytesize = await estimateFee({ coin: 'btc', sender: "mmbkkktHcJQS6p9FsbEc3vrK9NYLwuVzaD", privkey: 'cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt', receiver: 'mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4', amount: 0.00002 })    
             console.log({bytesize})
+
+            const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
+            console.log({gaslimit})
+            
         } catch (error) {
             console.log(error);
-            
         }
 
         
         
 
-        // const gaslimit = await estimateFee({coin: 'eth',sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001})
+        
 
         const randomPhrase = await getRandomPhrase()
 

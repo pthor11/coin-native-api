@@ -2,22 +2,22 @@ import '../shim'
 import { Buffer } from 'buffer'
 import BN from 'bignumber.js'
 import * as  bitcoinjs from 'bitcoinjs-lib'
+import ethUtil from './lib/ethereumjs-util'
 import rpc from './lib/ethRPC'
 import axios from 'axios'
 import coinlist from './lib/coinlist'
 
-const estimateByteSize = async ({ sender, privkey, receiver, amount }) => {
+const estimateByteSize = async ({ sender, receiver, amount }) => {
     const amount_bn_btc = new BN(amount)
     
     if (amount_bn_btc.isNaN()) {
         return Promise.reject({ code: 9002 })
     }
 
-    let keyPair
     try {
-        keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
+        bitcoinjs.address.toOutputScript(sender, coinlist.btc.network)
     } catch (error) {
-        return Promise.reject({ code: 9003 })
+        return Promise.reject({ code: 9013 })
     }
 
     try {
@@ -50,31 +50,44 @@ const estimateByteSize = async ({ sender, privkey, receiver, amount }) => {
 }
 
 const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
+    const amount_bn_eth = new BN(amount)
+
+    if (amount_bn_eth.isNaN()) {
+        return Promise.reject({ code: 9002 })
+    }
+
+    if (!ethUtil.isValidAddress(sender)) {
+        return Promise.reject({ code: 9013 })
+    }
+
+    if (!ethUtil.isValidAddress(receiver)) {
+        return Promise.reject({ code: 9004 })
+    }
+
+    let payload = {
+        from: sender,
+        to: receiver,
+        value: '0x' + amount_bn_eth.multipliedBy(1000000000000000000).toString(16),
+    }
+    if (data) {
+        payload.data = data
+    }
     try {
-        let payload = {
-            from: sender,
-            to: receiver,
-            value: '0x' + (amount * 1000000000000000000).toString(16),
-        }
-        if (data) {
-            payload.data = data
-        }
         const limit = await rpc('eth_estimateGas', [payload, 'latest'])
-        return parseInt(limit.data.result)
+        return limit.data.result ? Promise.resolve(new BN(limit.data.result).toNumber()) : Promise.reject({code: 9014})
     } catch (error) {
-        console.log(error);
-        throw new Error(error)
+        return Promise.reject({code: 9014})
     }
 }
 
-export default async ({ coin, sender, privkey, receiver, amount, data }) => {
-    if (!coin || !sender || !privkey || !receiver || !amount) {
+export default async ({ coin, sender, receiver, amount, data }) => {
+    if (!coin || !sender || !receiver || !amount) {
         return Promise.reject({ code: 9000 })
     }
 
     switch (coin) {
         case 'btc':
-            return estimateByteSize({ sender, privkey, receiver, amount })
+            return estimateByteSize({ sender, receiver, amount })
         case 'eth':
             return estimateGasLimit({ sender, receiver, amount, data })
         default:
