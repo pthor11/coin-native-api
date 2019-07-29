@@ -7,49 +7,46 @@ import axios from 'axios'
 import coinlist from './lib/coinlist'
 
 const estimateByteSize = async ({ sender, privkey, receiver, amount }) => {
-    try {
-        const amount_bn_btc = new BN(amount)
-        if (amount_bn_btc._isBigNumber()) {
-            
-        }
-
-        const amount_bn_sat = amount_bn_btc.multipliedBy(100000000)
-        
-        const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
-        // console.log({keyPair})
-
-
-        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
-        const utxos = utxos_response.data.data.txs
-        
-        const balance = parseInt(100000000 * utxos.reduce((balance, utxo) => balance + parseFloat(utxo.value), 0))
-
-        if (balance === 0 || utxos.length === 0) {
-            return 223
-        }
-        console.log({balance})
-        
-        const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
-        
-
-        const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
-        txb.setVersion(1)
-        txb.addOutput(receiver, amount)
-        txb.addOutput(sender, balance - amount - 223)
-        for (let i = 0; i < inputs.length; i++) {
-            txb.addInput(inputs[i].txid, inputs[i].vout)
-        }
-        for (let i = 0; i < inputs.length; i++) {
-            txb.sign(i, keyPair)
-        }
-
-        const estimate_raw_tx = txb.build().toHex()
-        console.log({ estimate_raw_tx })
-
-        return Buffer.byteLength(estimate_raw_tx, 'hex')
-    } catch (err) {
-        throw new Error(err)
+    const amount_bn_btc = new BN(amount)
+    
+    if (amount_bn_btc.isNaN()) {
+        return Promise.reject({ code: 9002 })
     }
+
+    let keyPair
+    try {
+        keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
+    } catch (error) {
+        return Promise.reject({ code: 9003 })
+    }
+
+    try {
+        bitcoinjs.address.toOutputScript(receiver, coinlist.btc.network)
+    } catch (error) {
+        return Promise.reject({ code: 9004 })
+    }
+
+    let utxos = []
+    try {
+        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
+        utxos = utxos_response.data.data.txs
+    } catch (error) {
+        return Promise.reject({code: 9008})
+    }
+
+    let inputCount = 0
+    let sum_input_value = new BN(0)
+    for (let i = 0; i < utxos.length; i++) {
+        const utxo = utxos[i]
+        sum_input_value = sum_input_value.plus(new BN(utxo.value))
+        inputCount += 1
+        if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_btc)) {
+            break
+        } 
+    }
+        
+    return inputCount === 0 ? 0 : inputCount * 148 + 34 * 2 + 10
+    
 }
 
 const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
@@ -72,7 +69,7 @@ const estimateGasLimit = async ({ sender, receiver, amount, data }) => {
 
 export default async ({ coin, sender, privkey, receiver, amount, data }) => {
     if (!coin || !sender || !privkey || !receiver || !amount) {
-        return Promise.reject({code: 4000})
+        return Promise.reject({ code: 9000 })
     }
 
     switch (coin) {
@@ -81,6 +78,6 @@ export default async ({ coin, sender, privkey, receiver, amount, data }) => {
         case 'eth':
             return estimateGasLimit({ sender, receiver, amount, data })
         default:
-            return Promise.reject({code: 4001})
+            return Promise.reject({ code: 9001 })
     }
 }

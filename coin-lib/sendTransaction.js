@@ -7,12 +7,13 @@ import btcRPC from './lib/btcRPC'
 import ethRPC from './lib/ethRPC'
 import axios from 'axios'
 import BN from 'bignumber.js'
+import CoinSelect from 'coinselect'
 import coinlist from './lib/coinlist'
 import { eth } from './config'
 
 const sendBTC = async ({ privkey, receiver, amount, fee }) => {
-    amount = new BN(amount).multipliedBy(100000000).toNumber()
-    console.log({ amount })
+    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
+    console.log({ amount: amount_bn_sat.toNumber() })
 
     const keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
     const sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
@@ -21,27 +22,35 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     try {
         // Get unspent txs
         const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
-        const utxos = utxos_response.data.data.txs
-        //console.log({ utxos })
-
+        let utxos = utxos_response.data.data.txs
+        // console.log({ utxos })
+        
         // Check amount
         // console.log({ amount })
 
-        const balance = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).multipliedBy(100000000)
-        // console.log({ balance })
+        const balance_bn_sat = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).multipliedBy(100000000)
+        console.log({ balance_bn_sat })
 
         const inputs = utxos.map(utxo => { return { txid: utxo.txid, vout: utxo.output_no } })
-        //console.log({inputs})
+        console.log({inputs})
 
 
-        const createRawTX = (feerate = 0, bytesize = 1) => {
+        const createRawTX = (vinputs, voutputs, fee) => {
+            // console.log({feerate, bytesize})
+            
             const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
             txb.setVersion(1)
-            txb.addOutput(receiver, amount)
-            txb.addOutput(sender, new BN(balance).minus(amount).minus(feerate * bytesize).toNumber())
-            for (let i = 0; i < inputs.length; i++) {
-                txb.addInput(inputs[i].txid, inputs[i].vout)
-            }
+            voutputs.forEach(output => {
+                if (!output.address) {
+                    output.address = sender
+                }
+                txb.addOutput(output.address, output.value)
+            })
+            // txb.addOutput(receiver, amount_bn_sat.toNumber())
+            // txb.addOutput(sender, balance_bn_sat.minus(amount_bn_sat).minus(fee).toNumber())
+            vinputs.forEach(input => {
+                txb.addInput(input.txId, input.vout)
+            })
             for (let i = 0; i < inputs.length; i++) {
                 txb.sign(i, keyPair)
             }
@@ -49,26 +58,51 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
             return txb.build().toHex()
         }
 
-        let raw_tx
-        let bytesize
-        let estimate_raw_tx
+        // let raw_tx
+        // let bytesize
+        // let estimate_raw_tx
+        
+
         if (!fee.feerate) {
-            const feerate_response = await btcRPC('estimatesmartfee', [2])
-            fee.feerate = new BN(feerate_response.data.result.feerate).multipliedBy(100000).toNumber()
+            try {
+                const feerate_response = await btcRPC('estimatesmartfee', [2])
+                console.log(feerate_response.data)
+                
+                fee.feerate = new BN(feerate_response.data.result.feerate).multipliedBy(100000).toNumber()    
+            } catch (error) {
+                console.log(error.response.data)
+                
+            }
+            
         }
         console.log({ feerate: fee.feerate })
 
-        estimate_raw_tx = createRawTX(fee.feerate, 223)
-        console.log({ estimate_raw_tx })
 
-        bytesize = Buffer.byteLength(estimate_raw_tx, 'hex')
-        console.log({ bytesize })
+        utxos = utxos.map(utxo => {return {txId: utxo.txid, vout: utxo.output_no, value: new BN(utxo.value).multipliedBy(100000000).toNumber()}})
+        const targets = [
+            {
+                address: receiver,
+                value: amount_bn_sat.toNumber()
+            }
+        ]
 
-        raw_tx = createRawTX(fee.feerate, bytesize)
+        console.log({utxos})
+        console.log({targets})
+        
+        const aa = CoinSelect(utxos, targets, 1)
+        console.log({fee: aa.fee});
+        console.log({inputs: aa.inputs});
+        console.log({outputs: aa.outputs});
+        // process.exit(0)
+
+        raw_tx = createRawTX(aa.inputs, aa.outputs, aa.fee)
         console.log({ raw_tx })
 
+        console.log((await btcRPC('getnetworkinfo', [])).data)
+        
 
         const result_response = await btcRPC('sendrawtransaction', [raw_tx])
+
         const result = result_response.data
 
         if (!result.err || result.result) {
@@ -78,7 +112,7 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
         }
 
     } catch (err) {
-        //console.log(err)
+        console.log(err.response.data)
         throw new Error(err)
     }
 

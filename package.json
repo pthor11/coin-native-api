@@ -18,6 +18,7 @@
     "btoa": "^1.2.1",
     "buffer": "^5.2.1",
     "coingecko-api": "^1.0.5",
+    "coinselect": "^3.1.11",
     "ethereumjs-tx": "^2.1.0",
     "events": "^1.1.1",
     "expo": "^33.0.0",
