@@ -60,8 +60,10 @@ export default function App() {
             // })
             // console.log({ send_eth_tx })
             
-            const btc_txid = '9aa14e1d2e5924cda8c3e2a277e9e502914e85a61e13d4032e04534aeba3b4bf'
-            const tx = await getTX({coin: 'btc', txid: btc_txid})
+            // const btc_txid = 'c93da679bd46c93669c62b040f22b46469d7bbbb88af78860d506dbebebe4a8f'
+            // const tx = await getTX({coin: 'btc', txid: btc_txid})
+            const eth_txid = '0x94d9bed68e8743be4c2545d77418f75100e16f6cab3e2c45e7db6ac10a94b4fd'
+            const tx = await getTX({coin: 'eth', txid: eth_txid})
             console.log({tx})
             
         } catch (error) {
