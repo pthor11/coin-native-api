@@ -1,4 +1,5 @@
 import btcRPC from './lib/btcRPC'
+import ethRPC from './lib/ethRPC'
 import BN from 'bignumber.js'
 
 
@@ -37,7 +38,7 @@ const txBTC = async ({ txid }) => {
         let amount_bn_btc = new BN(outputs.find(output => !output.addresses.includes(sent_address)).value)
 
         return Promise.resolve({
-            transaction_hash: raw_tx.data.result.hash,
+            hash: raw_tx.data.result.hash,
             block: raw_tx.data.result.blockhash,
             timestamp: raw_tx.data.result.time,
             amount: amount_bn_btc.toNumber(),
@@ -45,17 +46,41 @@ const txBTC = async ({ txid }) => {
             inputs,
             outputs,
         })
-
-
     } catch (error) {
         Promise.reject({ code: 9015 })
-
     }
     return txid
 }
 
 const txETH = async ({ txid }) => {
-    return txid
+    let transaction_tx
+    let receipt_tx
+    let block
+    try {
+        transaction_tx = await ethRPC('eth_getTransactionByHash', [txid])
+        receipt_tx = await ethRPC('eth_getTransactionReceipt', [txid])
+    } catch (error) {
+        console.log(error)
+        return Promise.reject({ code: 9015 })
+    }
+    const blockNumber = transaction_tx.data.result.blockNumber || null
+    console.log({blockNumber})
+    
+    block = blockNumber ? await ethRPC('eth_getBlockByNumber', [blockNumber, true]) : null
+    
+    // console.log('transaction_tx', transaction_tx.data.result)
+    // console.log('receipt_tx', receipt_tx.data.result)
+    // console.log('block', block.data.result)    
+
+    return Promise.resolve({
+        hash: transaction_tx.data.result.hash,
+        block: transaction_tx.data.result.blockNumber ? new BN(transaction_tx.data.result.blockNumber).toNumber() : undefined,
+        timestamp: block ? new BN(block.data.result.timestamp).toNumber() : undefined,
+        amount: new BN(transaction_tx.data.result.value).toNumber(),
+        fee: receipt_tx.data ? new BN(receipt_tx.data.result.gasUsed).multipliedBy(transaction_tx.data.result.gasPrice).dividedBy(1000000000000000000).toNumber() : undefined,
+        from: transaction_tx.data.result.from,
+        to: transaction_tx.data.result.to,
+    })
 }
 
 
