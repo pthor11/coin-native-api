@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX, estimateFee } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -45,22 +45,25 @@ export default function App() {
             // const send_btc_tx = await sendTX({
             //     privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt",
             //     receiver: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4",
-            //     fee: { feerate: 1 },
+            //     fee: { feerate: 0.1 },
             //     amount: 0.0001,
             //     coin: 'btc'
             // })
             // console.log({ send_btc_tx })
 
-            const send_eth_tx = await sendTX({
-                privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
-                receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
-                fee: { gasprice: 10000000000 },
-                amount: 0.000528,
-                coin: 'eth'
-            })
-            console.log({ send_eth_tx })
+            // const send_eth_tx = await sendTX({
+            //     privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
+            //     receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
+            //     // fee: { gasprice: 10000000000 },
+            //     amount: 0.000528,
+            //     coin: 'eth'
+            // })
+            // console.log({ send_eth_tx })
             
-
+            const btc_txid = '9aa14e1d2e5924cda8c3e2a277e9e502914e85a61e13d4032e04534aeba3b4bf'
+            const tx = await getTX({coin: 'btc', txid: btc_txid})
+            console.log({tx})
+            
         } catch (error) {
             console.log(error);
         }
