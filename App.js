@@ -36,6 +36,10 @@ export default function App() {
     const run = async () => {
 
         try {
+
+            // console.log(addNewAddress(testPhrase, 'trx', 0))
+            
+
             // const fee_btc = await estimateFee({ coin: 'btc', sender: "mmbkkktHcJQS6p9FsbEc3vrK9NYLwuVzaD", privkey: 'cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt', receiver: 'mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4', amount: 0.00002 })
             // console.log({ fee_btc })
 
@@ -62,10 +66,20 @@ export default function App() {
             
             // const btc_txid = 'c93da679bd46c93669c62b040f22b46469d7bbbb88af78860d506dbebebe4a8f'
             // const tx = await getTX({coin: 'btc', txid: btc_txid})
-            const eth_txid = '0x94d9bed68e8743be4c2545d77418f75100e16f6cab3e2c45e7db6ac10a94b4fd'
-            const tx = await getTX({coin: 'eth', txid: eth_txid})
+            // const eth_txid = '0x94d9bed68e8743be4c2545d77418f75100e16f6cab3e2c45e7db6ac10a94b4fd'
+            // const tx = await getTX({coin: 'eth', txid: eth_txid})
+            // console.log({tx})
+
+            const tx = await sendTX({
+                coin: 'trx',
+                receiver: 'TH1TKfZb3zmkF3K7Mg9jQw3skhRT8oEbHG',
+                privkey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea',
+                amount: 0.0001
+            })
+            
             console.log({tx})
             
+
         } catch (error) {
             console.log(error);
         }

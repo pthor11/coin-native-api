@@ -2,6 +2,7 @@ import '../shim'
 import { Buffer } from 'buffer'
 import * as  bitcoinjs from 'bitcoinjs-lib'
 import ethUtil from './lib/ethereumjs-util'
+import tronNode from './lib/tronNode'
 import { Transaction } from 'ethereumjs-tx'
 import btcRPC from './lib/btcRPC'
 import ethRPC from './lib/ethRPC'
@@ -28,7 +29,7 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     try {
         const { bytesize, data: { inputs, balance } } = await estimateFee({ coin: 'btc', sender, receiver, amount })
         bytesize_bn_byte = new BN(bytesize)
-        balance_bn_sat = new BN(balance).multipliedBy(100000000)        
+        balance_bn_sat = new BN(balance).multipliedBy(100000000)
         vinputs = inputs
     } catch (error) {
         return Promise.reject(error)
@@ -70,9 +71,9 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
     try {
         const response = await btcRPC('sendrawtransaction', [raw_tx])
-        return response.data ? Promise.resolve(response.data.result) : Promise.reject({code: 9010})
+        return response.data ? Promise.resolve(response.data.result) : Promise.reject({ code: 9010 })
     } catch (error) {
-        Promise.reject({code: 9010})
+        Promise.reject({ code: 9010 })
     }
 }
 
@@ -192,6 +193,23 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
     }
 }
 
+const sendTRX = async ({ privkey, receiver, amount }) => {
+    const amount_bn_trx = new BN(amount)
+
+    if (amount_bn_trx.isNaN()) {
+        return Promise.reject({code: 9002})
+    }
+
+    const amount_bn_sun = new BN(tronNode.toSun(amount))
+    
+    try {
+        const result = await tronNode.trx.sendTransaction(receiver, amount_bn_sun.toNumber(), privkey)
+        return Promise.resolve(result.transaction.txID)
+    } catch (error) {
+        return Promise.reject({ code: 9010 })
+    }
+}
+
 const sendTX = async ({ privkey, receiver, amount, fee = {}, coin }) => {
     if (!coin || !privkey || !receiver || !amount) {
         return Promise.reject({ code: 9000 })
@@ -201,6 +219,8 @@ const sendTX = async ({ privkey, receiver, amount, fee = {}, coin }) => {
             return sendBTC({ privkey, receiver, amount, fee })
         case 'eth':
             return sendETH({ privkey, receiver, amount, fee })
+        case 'trx':
+            return sendTRX({ privkey, receiver, amount })
         default:
             return Promise.reject({ code: 9001 })
     }
