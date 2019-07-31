@@ -7,7 +7,7 @@ import rpc from './lib/ethRPC'
 import axios from 'axios'
 import coinlist from './lib/coinlist'
 
-const estimateByteSize = async ({ sender, receiver, amount }) => {
+const estimateByteSize = async ({ sender, receiver, amount, coin }) => {
     const amount_bn_btc = new BN(amount)
 
     if (amount_bn_btc.isNaN()) {
@@ -27,11 +27,9 @@ const estimateByteSize = async ({ sender, receiver, amount }) => {
     }
 
     let utxos = []
-    let balance 
     try {
-        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
+        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/${coin}test/${sender}`)
         utxos = utxos_response.data.data.txs
-        balance = utxos.reduce((balance, utxo) => balance.plus(utxo.value), new BN(0)).toNumber()
     } catch (error) {
         return Promise.reject({ code: 9008 })
     }
@@ -47,7 +45,7 @@ const estimateByteSize = async ({ sender, receiver, amount }) => {
         }
     }
 
-    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: {inputs, balance} })
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: {inputs, sum_input_value} })
 
 }
 
@@ -91,7 +89,7 @@ export default async ({ coin, sender, receiver, amount, data }) => {
         case 'btc':
         case 'bch':
         case 'ltc':
-            return estimateByteSize({ sender, receiver, amount })
+            return estimateByteSize({ sender, receiver, amount, coin })
         case 'eth':
             return estimateGasLimit({ sender, receiver, amount, data })
         default:

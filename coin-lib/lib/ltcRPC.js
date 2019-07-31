@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {btc} from '../config'
+import {ltc} from '../config'
 
 const call = (method, params) => {
     const data = JSON.stringify({
@@ -10,9 +10,9 @@ const call = (method, params) => {
     })
 
     return axios({
-        url: `http://${btc.url}:${btc.port}`,
+        url: `http://${ltc.url}:${ltc.port}`,
         headers: {
-            Authorization: btc.auth,
+            Authorization: "Basic c2lsb3RlY2g6YWJjMTIz",
         },
         data,
         method: 'post'

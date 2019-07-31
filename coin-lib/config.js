@@ -20,14 +20,15 @@ const btc = {
     port: 18332,
     username: 'silotech',
     password: 'abc123',
-    
+    auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 
 const ltc = {
-    url: process.env.LTC_NODE_URL,
-    port: process.env.LTC_NODE_PORT,
-    username: process.env.LTC_NODE_USERNAME,
-    password: process.env.LTC_NODE_PASSWORD
+    url: '192.168.1.250',
+    port: 19332,
+    username: 'silotech',
+    password: 'abc123',
+    auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 
 const tron = {

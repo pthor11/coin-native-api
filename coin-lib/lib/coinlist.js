@@ -18,6 +18,6 @@ export default {
     eth: { id: 60, network : bitcoinjs.bitcoin.networks.testnet },
     etc: { id: 61, network : bitcoinjs.bitcoin.networks.testnet },
     trx: { id: 195, network : bitcoinjs.bitcoin.networks.testnet },
-    ltc: { id: 1, network : bitcoinjs.bitcoin.networks.testnet }, 
+    ltc: { id: 2, network : bitcoinjs.bitcoin.networks.testnet }, 
     bch: { id: 145, network : bitcoinjs.bitcoin.networks.testnet },
 }

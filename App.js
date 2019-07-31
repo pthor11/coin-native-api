@@ -37,7 +37,8 @@ export default function App() {
 
         try {
 
-            // console.log(addNewAddress(testPhrase, 'trx', 0))
+            console.log(addNewAddress(testPhrase, 'ltc', 0))
+            console.log(addNewAddress(testPhrase, 'ltc', 1))
             
 
             // const fee_btc = await estimateFee({ coin: 'btc', sender: "mmbkkktHcJQS6p9FsbEc3vrK9NYLwuVzaD", privkey: 'cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt', receiver: 'mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4', amount: 0.00002 })
@@ -54,6 +55,15 @@ export default function App() {
             //     coin: 'btc'
             // })
             // console.log({ send_btc_tx })
+
+            // const send_ltc_tx = await sendTX({
+            //     privkey: "cW28z1Qm1pHgVGxmzcHCFZ5cuGM2CvT3uNNNUapTpNoxnVLH2JQq",
+            //     receiver: "n1BQw7FBKJfyt7EXDEvB2LjeWwxxHfFxuK",
+            //     fee: { feerate: 0.1 },
+            //     amount: 0.0001,
+            //     coin: 'ltc'
+            // })
+            // console.log({ send_ltc_tx })
 
             // const send_eth_tx = await sendTX({
             //     privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
