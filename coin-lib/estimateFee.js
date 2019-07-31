@@ -89,6 +89,8 @@ export default async ({ coin, sender, receiver, amount, data }) => {
 
     switch (coin) {
         case 'btc':
+        case 'bch':
+        case 'ltc':
             return estimateByteSize({ sender, receiver, amount })
         case 'eth':
             return estimateGasLimit({ sender, receiver, amount, data })

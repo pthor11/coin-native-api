@@ -70,14 +70,14 @@ export default function App() {
             // const tx = await getTX({coin: 'eth', txid: eth_txid})
             // console.log({tx})
 
-            const tx = await sendTX({
-                coin: 'trx',
-                receiver: 'TH1TKfZb3zmkF3K7Mg9jQw3skhRT8oEbHG',
-                privkey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea',
-                amount: 0.0001
-            })
+            // const tx = await sendTX({
+            //     coin: 'trx',
+            //     receiver: 'TH1TKfZb3zmkF3K7Mg9jQw3skhRT8oEbHG',
+            //     privkey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea',
+            //     amount: 0.0001
+            // })
             
-            console.log({tx})
+            // console.log({tx})
             
 
         } catch (error) {
