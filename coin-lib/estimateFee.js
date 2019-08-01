@@ -45,7 +45,7 @@ const estimateByteSizeBTC = async ({ sender, receiver, amount}) => {
         }
     }
 
-    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value } })
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value: sum_input_value.toNumber() } })
 }
 
 const estimateByteSizeLTC = async ({ sender, receiver, amount}) => {
@@ -86,7 +86,7 @@ const estimateByteSizeLTC = async ({ sender, receiver, amount}) => {
         }
     }
 
-    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value } })
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value: sum_input_value.toNumber() } })
 }
 
 const estimateByteSizeBCH = async ({ sender, receiver, amount}) => {
@@ -108,15 +108,10 @@ const estimateByteSizeBCH = async ({ sender, receiver, amount}) => {
         return Promise.reject({ code: 9004 })
     }
 
-    const response = await axios.get(`https://api.blockchair.com/bitcoin-cash/testnet/dashboards/address/${sender}`)
-    console.log({response: response.data})
-    
-
-    process.exit(0)
     let utxos = []
     try {
-        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/ltctest/${sender}`)
-        utxos = utxos_response.data.data.txs
+        const utxos_response = await axios.get(`https://api.blockchair.com/bitcoin-cash/dashboards/address/${sender}`)
+        utxos = utxos_response.data.data[sender].utxo
     } catch (error) {
         return Promise.reject({ code: 9008 })
     }
@@ -125,14 +120,14 @@ const estimateByteSizeBCH = async ({ sender, receiver, amount}) => {
     let sum_input_value = new BN(0)
     for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
-        inputs.push({ txid: utxo.txid, vout: utxo.output_no })
-        sum_input_value = sum_input_value.plus(new BN(utxo.value))
+        inputs.push({ txid: utxo.transaction_hash, vout: utxo.index })
+        sum_input_value = sum_input_value.plus(new BN(utxo.value).dividedBy(100000000))
         if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_btc)) {
             break
         }
     }
 
-    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value } })
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value: sum_input_value.toNumber()} })
 }
 
 const estimateGasLimitETH = async ({ sender, receiver, amount, data }) => {
