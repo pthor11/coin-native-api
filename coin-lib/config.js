@@ -31,6 +31,10 @@ const ltc = {
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 
+const etc = {
+    url: 'https://web3.gastracker.io/'
+}
+
 const tron = {
     full_node: process.env.TRON_FULL_NODE,
     solidity_node: process.env.TRON_SOLIDITY_NODE,
@@ -42,5 +46,6 @@ export  {
     eth,
     btc,
     ltc,
+    etc,
     tron
 }
