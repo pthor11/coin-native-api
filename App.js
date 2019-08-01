@@ -53,7 +53,7 @@ export default function App() {
             // const fee_eth = await estimateFee({ coin: 'eth', sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001 })
             // console.log({ fee_eth })
 
-            // const fee_etc = await estimateFee({ coin: 'eth', sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001 })
+            // const fee_etc = await estimateFee({ coin: 'etc', sender: '0x34edb9229cC14ac39874070658bF3e8ad0069976', receiver: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be', amount: 0.01 })
             // console.log({ fee_etc })
 
             // const send_btc_tx = await sendTX({
@@ -82,6 +82,15 @@ export default function App() {
             //     coin: 'eth'
             // })
             // console.log({ send_eth_tx })
+
+            const send_etc_tx = await sendTX({
+                privkey: "0x08b3038ce98d48d544730cc67228a26c884a645c4f09c094df67775730d8ebc6",
+                receiver: "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+                // fee: { gasprice: 30000000000 },
+                amount: 0.01,
+                coin: 'etc'
+            })
+            console.log({ send_etc_tx })
             
             // const btc_txid = 'c93da679bd46c93669c62b040f22b46469d7bbbb88af78860d506dbebebe4a8f'
             // const tx = await getTX({coin: 'btc', txid: btc_txid})

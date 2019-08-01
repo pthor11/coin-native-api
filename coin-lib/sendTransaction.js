@@ -4,9 +4,11 @@ import * as  bitcoinjs from 'bitcoinjs-lib'
 import ethUtil from './lib/ethereumjs-util'
 import tronNode from './lib/tronNode'
 import { Transaction } from 'ethereumjs-tx'
+import Common from 'ethereumjs-common'
 import btcRPC from './lib/btcRPC'
 import ltcRPC from './lib/ltcRPC'
 import ethRPC from './lib/ethRPC'
+import etcRPC from './lib/etcRPC'
 import estimateFee from './estimateFee'
 import BN from 'bignumber.js'
 import coinlist from './lib/coinlist'
@@ -266,6 +268,130 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
     }
 }
 
+const sendETC = async ({ privkey, receiver, amount, fee }) => {
+    const amount_bn_eth = new BN(amount)
+
+    if (amount_bn_eth.isNaN()) {
+        return Promise.reject({ code: 9002 })
+    }
+
+    if (!ethUtil.isValidPrivate(ethUtil.toBuffer(privkey))) {
+        return Promise.reject({ code: 9003 })
+    }
+
+    if (!ethUtil.isValidAddress(receiver)) {
+        return Promise.reject({ code: 9004 })
+    }
+
+    try {
+
+        const amount_bn_wei = amount_bn_eth.multipliedBy(1000000000000000000)
+
+        const sender = `0x` + ethUtil.privateToAddress(privkey).toString('hex')
+        // console.log({ sender })
+
+        let nonce
+        try {
+            const transactionCount_response = await etcRPC('eth_getTransactionCount', [sender, 'latest'])
+            if (transactionCount_response.data) {
+                nonce = transactionCount_response.data.result
+            } else {
+                return Promise.reject({ code: 9005 })
+            }
+        } catch (error) {
+            console.log(error)
+            
+            return Promise.reject({ code: 9005 })
+        }
+
+        // console.log({ nonce })
+
+        if (!fee.gasprice) {
+            try {
+                const gasprice_response = await etcRPC('eth_gasPrice', [])
+                if (!gasprice_response.data) {
+                    return Promise.reject({ code: 9006 })
+                }
+                fee.gasprice = gasprice_response.data.result
+                // console.log({gasprice: fee.gasprice})
+
+            } catch (error) {
+                return Promise.reject({ code: 9006 })
+            }
+        }
+        const gasPrice_bn = new BN(fee.gasprice)
+        // console.log({ gasPrice_bn })
+
+        let gaslimit
+        try {
+            const gaslimit_response = await etcRPC('eth_estimateGas', [{
+                from: sender,
+                to: receiver,
+                value: `0x` + amount_bn_wei.toString(16)
+            }])
+            if (!gaslimit_response.data) {
+                return Promise.reject({ code: 9007 })
+            }
+            gaslimit = gaslimit_response.data.result
+
+        } catch (error) {
+            return Promise.reject({ code: 9007 })
+        }
+        const gasLimit_bn = new BN(gaslimit)
+        // console.log({ gasLimit_bn })
+
+        let balance_bn
+        try {
+            const balance_response = await etcRPC('eth_getBalance', [sender, 'latest'])
+            if (!balance_response.data) {
+                return Promise.reject({ code: 9008 })
+            }
+            balance_bn = new BN(balance_response.data.result)
+        } catch (error) {
+            return Promise.reject({ code: 9008 })
+        }
+        // console.log({ balance: balance_bn.toNumber() })
+
+        if (amount_bn_wei.plus(gasPrice_bn).isGreaterThanOrEqualTo(balance_bn)) {
+            return Promise.reject({ code: 9009 })
+        }
+
+        const tx_data = {
+            nonce,
+            gasPrice: '0x' + gasPrice_bn.toString(16),
+            gasLimit: '0x' + gasLimit_bn.toString(16),
+            to: receiver,
+            value: '0x' + amount_bn_wei.toString(16),
+        }
+        // console.log({ tx_data })
+
+        const raw_tx = new Transaction(tx_data, {
+            common: Common.forCustomChain('mainnet', {name: 'etc', networkId: 1, chainId: 61}, 'petersburg')
+        })
+        
+        raw_tx.sign(Buffer.from(privkey.substring(2), 'hex'))
+
+        const signedTX = raw_tx.serialize().toString('hex')
+        // console.log({ signedTX })
+
+        try {
+            const txid_response = await etcRPC('eth_sendRawTransaction', [`0x` + signedTX])
+            if (txid_response.data.result) {
+                return Promise.resolve(txid_response.data.result)
+            } else {
+                console.log(txid_response.data);
+                return Promise.reject({ code: 9010 })
+            }
+        } catch (error) {
+            console.log(error)
+            return Promise.reject({ code: 9010 })
+        }
+    } catch (err) {
+        console.log(err)
+        return Promise.reject({ code: 9010 })
+    }
+}
+
 const sendTRX = async ({ privkey, receiver, amount }) => {
     const amount_bn_trx = new BN(amount)
 
@@ -294,6 +420,8 @@ const sendTX = async ({ privkey, receiver, amount, fee = {}, coin }) => {
             return sendLTC({ privkey, receiver, amount, fee })
         case 'eth':
             return sendETH({ privkey, receiver, amount, fee })
+        case 'etc':
+            return sendETC({ privkey, receiver, amount, fee })
         case 'trx':
             return sendTRX({ privkey, receiver, amount })
         default:

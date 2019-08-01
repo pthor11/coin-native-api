@@ -189,10 +189,12 @@ const estimateGasLimitETC = async ({ sender, receiver, amount, data }) => {
     if (data) {
         payload.data = data
     }
+    
     try {
-        const limit = await rpc('eth_estimateGas', [payload, 'latest'])
+        const limit = await etcRPC('eth_estimateGas', [payload, 'latest'])
         return limit.data.result ? Promise.resolve({ gaslimit: new BN(limit.data.result).toNumber() }) : Promise.reject({ code: 9014 })
     } catch (error) {
+        console.log(error)
         return Promise.reject({ code: 9014 })
     }
 }

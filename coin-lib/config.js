@@ -32,7 +32,7 @@ const ltc = {
 }
 
 const etc = {
-    url: 'https://web3.gastracker.io/'
+    url: 'https://etc-parity.0xinfra.com/'
 }
 
 const tron = {
