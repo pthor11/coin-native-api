@@ -47,8 +47,8 @@ export default function App() {
             // const fee_ltc = await estimateFee({ coin: 'ltc', sender: "mrgShXLLUJ955jspwh7gbtY8iBigY3eCaQ", receiver: 'n1BQw7FBKJfyt7EXDEvB2LjeWwxxHfFxuK', amount: 0.00002 })
             // console.log({ fee_ltc })
 
-            const fee_bch = await estimateFee({ coin: 'bch', sender: "1NyFVXB6XBF8woipZtgW3jYBbkVQFPdFA5", receiver: '1MDyWzZjhtM8h1vpDzoyi3Pe2KALsyE7FM', amount: 0.00004 })
-            console.log({ fee_bch })
+            // const fee_bch = await estimateFee({ coin: 'bch', sender: "1NyFVXB6XBF8woipZtgW3jYBbkVQFPdFA5", receiver: '1MDyWzZjhtM8h1vpDzoyi3Pe2KALsyE7FM', amount: 0.00004 })
+            // console.log({ fee_bch })
 
             // const fee_eth = await estimateFee({ coin: 'eth', sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001 })
             // console.log({ fee_eth })
@@ -64,6 +64,15 @@ export default function App() {
             //     coin: 'btc'
             // })
             // console.log({ send_btc_tx })
+
+            // const send_bch_tx = await sendTX({
+            //     privkey: "KxMKp9W38evnGn217ufWXP6go8HNUexNGhA2MdSezpxqk1NPG91x",
+            //     receiver: "1MDyWzZjhtM8h1vpDzoyi3Pe2KALsyE7FM",
+            //     // fee: { feerate: 0.1 },
+            //     amount: 0.00004,
+            //     coin: 'bch'
+            // })
+            // console.log({ send_bch_tx })
 
             // const send_ltc_tx = await sendTX({
             //     privkey: "cW28z1Qm1pHgVGxmzcHCFZ5cuGM2CvT3uNNNUapTpNoxnVLH2JQq",

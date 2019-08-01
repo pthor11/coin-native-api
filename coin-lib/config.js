@@ -23,6 +23,14 @@ const btc = {
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 
+const bch = {
+    url: '192.168.1.240',
+    port: 8332,
+    username: 'silotech',
+    password: 'abc123',
+    auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
+}
+
 const ltc = {
     url: '192.168.1.250',
     port: 19332,
@@ -45,6 +53,7 @@ export  {
     mongo,
     eth,
     btc,
+    bch,
     ltc,
     etc,
     tron
