@@ -39,7 +39,7 @@ export default function App() {
 
             // console.log(addNewAddress(testPhrase, 'bch', 0))
             // console.log(addNewAddress(testPhrase, 'bch', 1))
-            
+
 
             // const fee_btc = await estimateFee({ coin: 'btc', sender: "mmbkkktHcJQS6p9FsbEc3vrK9NYLwuVzaD", privkey: 'cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt', receiver: 'mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4', amount: 0.00002 })
             // console.log({ fee_btc })
@@ -50,11 +50,26 @@ export default function App() {
             // const fee_bch = await estimateFee({ coin: 'bch', sender: "1NyFVXB6XBF8woipZtgW3jYBbkVQFPdFA5", receiver: '1MDyWzZjhtM8h1vpDzoyi3Pe2KALsyE7FM', amount: 0.00004 })
             // console.log({ fee_bch })
 
-            // const fee_eth = await estimateFee({ coin: 'eth', sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0xc918975B8591b0104eAAF7a0DDcBc892bB78A88A', amount: 0.00001 })
+            // const fee_eth = await estimateFee({ coin: 'eth', sender: '0xc918975b8591b0104eaaf7a0ddcbc892bb78a88a', receiver: '0x959FD7Ef9089B7142B6B908Dc3A8af7Aa8ff0FA1', amount: 0.00001 })
             // console.log({ fee_eth })
+
+            // const fee_erc20 = await estimateFee({ coin: 'erc20', sender: '0x68fa7cC45D3B45bd58E1b05Dc5a377312641caa8', receiver: '0xf457aAf330a34Aba49688348d381caAaDC094023', contract: '0x904c3dea0531faf6326bacfb2a64bce23b210bf9', amount: 10 })
+            // console.log({ fee_erc20 })
 
             // const fee_etc = await estimateFee({ coin: 'etc', sender: '0x34edb9229cC14ac39874070658bF3e8ad0069976', receiver: '0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be', amount: 0.01 })
             // console.log({ fee_etc })
+
+
+            const send_erc20_tx = await sendTX({
+                privkey: "0x0976D1A55FDE0E6A22B92A21E7AE3D9D43F151B087EC2AAA29F5085B3678DECC",
+                receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
+                contract: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9",
+                // fee: { gasprice: 10000000000 },
+                amount: 10,
+                coin: 'erc20'
+            })
+            console.log({ send_erc20_tx })
+
 
             // const send_btc_tx = await sendTX({
             //     privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt",
@@ -100,7 +115,7 @@ export default function App() {
             //     coin: 'etc'
             // })
             // console.log({ send_etc_tx })
-            
+
             // const btc_txid = 'c93da679bd46c93669c62b040f22b46469d7bbbb88af78860d506dbebebe4a8f'
             // const tx = await getTX({coin: 'btc', txid: btc_txid})
             // const eth_txid = '0x94d9bed68e8743be4c2545d77418f75100e16f6cab3e2c45e7db6ac10a94b4fd'
@@ -113,9 +128,9 @@ export default function App() {
             //     privkey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea',
             //     amount: 0.0001
             // })
-            
+
             // console.log({tx})
-            
+
 
         } catch (error) {
             console.log(error);

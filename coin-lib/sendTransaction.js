@@ -4,6 +4,7 @@ import * as  bitcoinjs from 'bitcoinjs-lib'
 import ethUtil from './lib/ethereumjs-util'
 import tronNode from './lib/tronNode'
 import { Transaction } from 'ethereumjs-tx'
+import abi from 'ethereumjs-abi'
 import Common from 'ethereumjs-common'
 import btcRPC from './lib/btcRPC'
 import bchRPC from './lib/bchRPC'
@@ -344,12 +345,7 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
     }
 }
 
-const sendERC20 = async ({ privkey, receiver, amount, fee }) => {
-    const amount_bn_eth = new BN(amount)
-
-    if (amount_bn_eth.isNaN()) {
-        return Promise.reject({ code: 9002 })
-    }
+const sendERC20 = async ({ privkey, receiver, contract, amount, fee }) => {
 
     if (!ethUtil.isValidPrivate(ethUtil.toBuffer(privkey))) {
         return Promise.reject({ code: 9003 })
@@ -361,10 +357,23 @@ const sendERC20 = async ({ privkey, receiver, amount, fee }) => {
 
     try {
 
-        const amount_bn_wei = amount_bn_eth.multipliedBy(1000000000000000000)
-
         const sender = `0x` + ethUtil.privateToAddress(privkey).toString('hex')
-        // console.log({ sender })
+        console.log({ sender })
+
+        let gaslimit
+        let data
+        try {
+            const fee_erc20 = await estimateFee({ coin: 'erc20', sender, receiver, contract, amount })
+            console.log({ fee_erc20 })
+
+            gaslimit = fee_erc20.gaslimit
+            data = fee_erc20.data
+
+        } catch (error) {
+            return Promise.reject({ code: 9007 })
+        }
+        const gasLimit_bn = new BN(gaslimit)
+        console.log({ data })
 
         let nonce
         try {
@@ -378,7 +387,7 @@ const sendERC20 = async ({ privkey, receiver, amount, fee }) => {
             return Promise.reject({ code: 9005 })
         }
 
-        // console.log({ nonce })
+        console.log({ nonce })
 
         if (!fee.gasprice) {
             try {
@@ -396,48 +405,19 @@ const sendERC20 = async ({ privkey, receiver, amount, fee }) => {
         const gasPrice_bn = new BN(fee.gasprice)
         // console.log({ gasprice: parseInt(fee.gasprice) })
 
-        let gaslimit
-        try {
-            const gaslimit_response = await ethRPC('eth_estimateGas', [{
-                from: sender,
-                to: receiver,
-                value: `0x` + amount_bn_wei.toString(16)
-            }])
-            if (!gaslimit_response.data) {
-                return Promise.reject({ code: 9007 })
-            }
-            gaslimit = gaslimit_response.data.result
+        
 
-        } catch (error) {
-            return Promise.reject({ code: 9007 })
-        }
-        const gasLimit_bn = new BN(gaslimit)
-        // console.log({ gaslimit: parseInt(gaslimit) })
-
-        let balance_bn
-        try {
-            const balance_response = await ethRPC('eth_getBalance', [sender, 'latest'])
-            if (!balance_response.data) {
-                return Promise.reject({ code: 9008 })
-            }
-            balance_bn = new BN(balance_response.data.result)
-        } catch (error) {
-            return Promise.reject({ code: 9008 })
-        }
-        console.log({ balance: balance_bn.toNumber() })
-
-        if (amount_bn_wei.plus(gasPrice_bn).isGreaterThanOrEqualTo(balance_bn)) {
-            return Promise.reject({ code: 9009 })
-        }
 
         const tx_data = {
             nonce,
             gasPrice: '0x' + gasPrice_bn.toString(16),
             gasLimit: '0x' + gasLimit_bn.toString(16),
-            to: receiver,
-            value: '0x' + amount_bn_wei.toString(16),
+            to: contract,
+            value: '0x0',
+            data
         }
-        // console.log({ tx_data })
+        console.log(tx_data)
+
 
         const raw_tx = new Transaction(tx_data, { chain: eth.chain })
         raw_tx.sign(Buffer.from(privkey.substring(2), 'hex'))
@@ -456,6 +436,8 @@ const sendERC20 = async ({ privkey, receiver, amount, fee }) => {
             return Promise.reject({ code: 9010 })
         }
     } catch (err) {
+        console.log(err)
+        
         return Promise.reject({ code: 9010 })
     }
 }
@@ -601,7 +583,7 @@ const sendTRX = async ({ privkey, receiver, amount }) => {
     }
 }
 
-const sendTX = async ({ privkey, receiver, amount, fee = {}, coin }) => {
+const sendTX = async ({ privkey, receiver, contract, amount, fee = {}, coin }) => {
     if (!coin || !privkey || !receiver || !amount) {
         return Promise.reject({ code: 9000 })
     }
@@ -617,7 +599,7 @@ const sendTX = async ({ privkey, receiver, amount, fee = {}, coin }) => {
         case 'etc':
             return sendETC({ privkey, receiver, amount, fee })
         case 'erc20':
-            return sendERC20({ privkey, receiver, amount, fee })
+            return sendERC20({ privkey, receiver, contract, amount, fee })
         case 'trx':
             return sendTRX({ privkey, receiver, amount })
         default:
