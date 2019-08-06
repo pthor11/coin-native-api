@@ -361,19 +361,17 @@ const sendERC20 = async ({ privkey, receiver, contract, amount, fee }) => {
         console.log({ sender })
 
         let gaslimit
-        let data
+        let transfer_data
         try {
             const fee_erc20 = await estimateFee({ coin: 'erc20', sender, receiver, contract, amount })
-            console.log({ fee_erc20 })
-
+            // console.log({ fee_erc20 })
             gaslimit = fee_erc20.gaslimit
-            data = fee_erc20.data
-
+            transfer_data = fee_erc20.data
         } catch (error) {
             return Promise.reject({ code: 9007 })
         }
+
         const gasLimit_bn = new BN(gaslimit)
-        console.log({ data })
 
         let nonce
         try {
@@ -387,7 +385,7 @@ const sendERC20 = async ({ privkey, receiver, contract, amount, fee }) => {
             return Promise.reject({ code: 9005 })
         }
 
-        console.log({ nonce })
+        // console.log({ nonce })
 
         if (!fee.gasprice) {
             try {
@@ -405,16 +403,13 @@ const sendERC20 = async ({ privkey, receiver, contract, amount, fee }) => {
         const gasPrice_bn = new BN(fee.gasprice)
         // console.log({ gasprice: parseInt(fee.gasprice) })
 
-        
-
-
         const tx_data = {
             nonce,
             gasPrice: '0x' + gasPrice_bn.toString(16),
             gasLimit: '0x' + gasLimit_bn.toString(16),
             to: contract,
             value: '0x0',
-            data
+            data: transfer_data
         }
         console.log(tx_data)
 

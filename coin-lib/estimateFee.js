@@ -224,10 +224,10 @@ const estimateGasLimitERC20 = async ({ sender, receiver, contract, amount }) => 
 
         const [balanceOf_bn_decimals, decimals_bn] = batch_response.data.map(each => new BN (each.result))
 
-        console.log({balanceOf_bn_decimals: balanceOf_bn_decimals.toString()});
+        // console.log({balanceOf_bn_decimals: balanceOf_bn_decimals.toString()});
         
         const amount_bn_decimals = amount_bn_token.multipliedBy(new BN(10).pow(decimals_bn))
-        console.log({amount_bn_decimals: amount_bn_decimals.toString()});
+        // console.log({amount_bn_decimals: amount_bn_decimals.toString()});
         
 
         if (amount_bn_decimals.isGreaterThanOrEqualTo(balanceOf_bn_decimals)) {
@@ -245,7 +245,7 @@ const estimateGasLimitERC20 = async ({ sender, receiver, contract, amount }) => 
         }
 
         const limit = await ethRPC('eth_estimateGas', [payload, 'latest'])
-        console.log({ limit: limit.data })
+        // console.log({ limit: limit.data })
 
         return limit.data.result ? Promise.resolve({ gaslimit: new BN(limit.data.result).toNumber(), data: transfer_data }) : Promise.reject({ code: 9014 })
     } catch (error) {
