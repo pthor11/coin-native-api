@@ -218,8 +218,8 @@ const estimateGasLimitERC20 = async ({ sender, receiver, contract, amount }) => 
         const decimals_data = `0x` + abi.methodID('decimals', []).toString('hex') + abi.rawEncode([], []).toString('hex')
 
         const batch_response = await ethRPC.batch([
-            {method: 'eth_call', params: [{ to: contract, data: balanceOf_data }]},
-            {method: 'eth_call', params: [{ to: contract, data: decimals_data }]},
+            {method: 'eth_call', params: [{ to: contract, data: balanceOf_data }, 'latest']},
+            {method: 'eth_call', params: [{ to: contract, data: decimals_data }, 'latest']},
         ])
 
         const [balanceOf_bn_decimals, decimals_bn] = batch_response.data.map(each => new BN (each.result))

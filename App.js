@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -60,15 +60,15 @@ export default function App() {
             // console.log({ fee_etc })
 
 
-            const send_erc20_tx = await sendTX({
-                privkey: "0x0976D1A55FDE0E6A22B92A21E7AE3D9D43F151B087EC2AAA29F5085B3678DECC",
-                receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
-                contract: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9",
-                // fee: { gasprice: 10000000000 },
-                amount: 10,
-                coin: 'erc20'
-            })
-            console.log({ send_erc20_tx })
+            // const send_erc20_tx = await sendTX({
+            //     privkey: "0x0976D1A55FDE0E6A22B92A21E7AE3D9D43F151B087EC2AAA29F5085B3678DECC",
+            //     receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
+            //     contract: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9",
+            //     // fee: { gasprice: 10000000000 },
+            //     amount: 10,
+            //     coin: 'erc20'
+            // })
+            // console.log({ send_erc20_tx })
 
 
             // const send_btc_tx = await sendTX({
@@ -130,6 +130,11 @@ export default function App() {
             // })
 
             // console.log({tx})
+
+            const usdt = await getTokenInfo({address: "0xdac17f958d2ee523a2206206994597c13d831ec7"})
+            // const akc = await getTokenInfo({address: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9"})
+            console.log({usdt})
+            
 
 
         } catch (error) {
