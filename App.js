@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo, getTokenBalance } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -131,11 +131,14 @@ export default function App() {
 
             // console.log({tx})
 
-            const usdt = await getTokenInfo({address: "0xdac17f958d2ee523a2206206994597c13d831ec7"})
+            // const usdt = await getTokenInfo({address: "0xdac17f958d2ee523a2206206994597c13d831ec7"})
             // const akc = await getTokenInfo({address: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9"})
-            console.log({usdt})
+            // console.log({usdt})
             
+            const balanceOf = await getTokenBalance({address: '0x0A98fB70939162725aE66E626Fe4b52cFF62c2e5', contract: '0xdac17f958d2ee523a2206206994597c13d831ec7'})
 
+            console.log({balanceOf})
+            
 
         } catch (error) {
             console.log(error);

@@ -4,6 +4,7 @@ import sendTX from './sendTransaction'
 import estimateFee from './estimateFee'
 import getTX from './getTransaction'
 import getTokenInfo from './getTokenInfo'
+import getTokenBalance from './getTokenBalance'
 
 export {
     getRandomPhrase,
@@ -11,5 +12,6 @@ export {
     sendTX,
     getTX,
     estimateFee,
-    getTokenInfo
+    getTokenInfo,
+    getTokenBalance
 }

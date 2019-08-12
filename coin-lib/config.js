@@ -1,23 +1,14 @@
-const mongo = {
-    user: process.env.MONGO_USER,
-    password: process.env.MONGO_PASSWORD,
-    url: process.env.MONGO_URL,
-    port: process.env.MONGO_PORT,
-    db_auth: process.env.MONGO_DB_AUTH,
-    db_full_txs: process.env.MONGO_DB_FULL_TXS,
-    db_short_txs: process.env.MONGO_DB_SHORT_TXS,
-}
-
 const eth = {
     url: '192.168.1.250',
     port: 8545,
+    auth: 'Basic c2lsb3RlY2g6YWJjMTIz',
     chain: 'kovan'
 }
 
 
 const btc = {
     url: '192.168.1.250',
-    port: 18332,
+    port: 8332,
     username: 'silotech',
     password: 'abc123',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
@@ -25,7 +16,7 @@ const btc = {
 
 const bch = {
     url: '192.168.1.240',
-    port: 8332,
+    port: 18332,
     username: 'silotech',
     password: 'abc123',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
@@ -33,7 +24,7 @@ const bch = {
 
 const ltc = {
     url: '192.168.1.250',
-    port: 19332,
+    port: 9332,
     username: 'silotech',
     password: 'abc123',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
@@ -44,13 +35,12 @@ const etc = {
 }
 
 const tron = {
-    full_node: process.env.TRON_FULL_NODE,
-    solidity_node: process.env.TRON_SOLIDITY_NODE,
-    event_server: process.env.TRON_EVENT_SERVER
+    full_node: 'https://api.shasta.trongrid.io',
+    solidity_node: 'https://api.shasta.trongrid.io',
+    event_server: 'https://api.shasta.trongrid.io'
 }
 
 export  {
-    mongo,
     eth,
     btc,
     bch,

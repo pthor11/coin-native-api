@@ -1,7 +1,8 @@
 import tronweb from './tronweb'
+import {tron} from '../config'
 
 export default new tronweb({
-    fullNode: 'https://api.shasta.trongrid.io',
-    solidityNode: 'https://api.shasta.trongrid.io',
-    eventServer: 'https://api.shasta.trongrid.io'
+    fullNode: tron.full_node,
+    solidityNode: tron.solidity_node,
+    eventServer: tron.event_server
 })
