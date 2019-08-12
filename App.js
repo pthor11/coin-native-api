@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo, getTokenBalance, getTRC20Info, getTRC20Balance, getTRC10Info } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo, getTokenBalance, getTRC20Info, getTRC20Balance, getTRC10Info, getTRC10Balance } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -145,8 +145,8 @@ export default function App() {
 
             // console.log({balance_trc20});
             
-            const trc10_info = await getTRC10Info({id: 1002000})
-            console.log(trc10_info)
+            const trc10_balance = await getTRC10Balance({address: 'TYKYJkKPB9G17DiimYvahEmrQY8SN3gRmL'})
+            console.log(trc10_balance)
             
 
         } catch (error) {

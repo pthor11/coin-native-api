@@ -6,6 +6,7 @@ import getTX from './getTransaction'
 import getTokenInfo from './getTokenInfo'
 import getTokenBalance from './getTokenBalance'
 import getTRC10Info from './getTRC10Info'
+import getTRC10Balance from './getTRC10Balance'
 import getTRC20Info from './getTRC20Info'
 import getTRC20Balance from './getTRC20Balance'
 
@@ -20,5 +21,6 @@ export {
     getTokenBalance,
     getTRC10Info,
     getTRC20Info,
+    getTRC10Balance,
     getTRC20Balance
 }
