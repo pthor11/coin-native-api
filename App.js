@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo, getTokenBalance, getTRC20Info, getTRC20Balance } from './coin-lib'
+import { getRandomPhrase, addNewAddress, sendTX, estimateFee, getTX, getTokenInfo, getTokenBalance, getTRC20Info, getTRC20Balance, getTRC10Info } from './coin-lib'
 const testPhrase = [
     'lounge',
     'devote',
@@ -141,9 +141,12 @@ export default function App() {
             
             // const usdt_trc20_info = await getTRC20Info({address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'})
 
-            const balance_trc20 = await getTRC20Balance({address: 'TPPwreC61fp5ZmyT7mVaPHjDRTzNFNApiu', contract: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'})
+            // const balance_trc20 = await getTRC20Balance({address: 'TPPwreC61fp5ZmyT7mVaPHjDRTzNFNApiu', contract: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'})
 
-            console.log({balance_trc20});
+            // console.log({balance_trc20});
+            
+            const trc10_info = await getTRC10Info({id: 1002000})
+            console.log(trc10_info)
             
 
         } catch (error) {
