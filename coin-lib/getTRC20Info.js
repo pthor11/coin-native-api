@@ -1,5 +1,4 @@
 import tronNode from './lib/tronNode'
-import BN from 'bignumber.js'
 
 export default async ({ address }) => {
     try {
