@@ -35,9 +35,9 @@ const etc = {
 }
 
 const tron = {
-    full_node: 'https://api.shasta.trongrid.io',
-    solidity_node: 'https://api.shasta.trongrid.io',
-    event_server: 'https://api.shasta.trongrid.io'
+    full_node: 'https://api.trongrid.io', //'https://api.shasta.trongrid.io',
+    solidity_node: 'https://api.trongrid.io', //'https://api.shasta.trongrid.io',
+    event_server: 'https://api.trongrid.io' //'https://api.shasta.trongrid.io'
 }
 
 export  {

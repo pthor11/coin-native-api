@@ -5,6 +5,7 @@ import estimateFee from './estimateFee'
 import getTX from './getTransaction'
 import getTokenInfo from './getTokenInfo'
 import getTokenBalance from './getTokenBalance'
+import getTRC20Info from './getTRC20Info'
 
 export {
     getRandomPhrase,
@@ -13,5 +14,6 @@ export {
     getTX,
     estimateFee,
     getTokenInfo,
-    getTokenBalance
+    getTokenBalance,
+    getTRC20Info
 }
