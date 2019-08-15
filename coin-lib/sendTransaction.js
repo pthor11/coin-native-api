@@ -1,6 +1,8 @@
 import '../shim'
 import { Buffer } from 'buffer'
 import * as  bitcoinjs from 'bitcoinjs-lib'
+// import * as bitcoincashjs from 'bitcoinjs-lib-cash'
+import * as bitcoincash from './lib/bitcoincashjs.0.1.7.min'
 import ethUtil from './lib/ethereumjs-util'
 import tronNode from './lib/tronNode'
 import { Transaction } from 'ethereumjs-tx'
@@ -82,75 +84,69 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
 const sendBCH = async ({ privkey, receiver, amount, fee }) => {
 
-    let keyPair
-    let sender
-    try {
-        keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.bch.network)
-        sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.bch.network }).address
-    } catch (error) {
-        return Promise.reject({ code: 9003 })
+    if (receiver.length !== 34 && receiver.length !== 54) {
+        return Promise.reject({error: 9004})
     }
 
-    // let bytesize
-    let vinputs
-    let bytesize_bn_byte
-    try {
-        const { bytesize, data: { inputs, sum_input_value } } = await estimateFee({ coin: 'bch', sender, receiver, amount })
-        bytesize_bn_byte = new BN(bytesize)
-        sum_input_value_bn_sat = new BN(sum_input_value).multipliedBy(100000000)
-        vinputs = inputs
-    } catch (error) {
-        return Promise.reject(error)
+    if (receiver.length === 54 && receiver.substring(0, 12) === 'bitcoincash:') {        
+        receiver = bitcoincash.Address.fromString(receiver, 'livenet', 'pubkeyhash', bitcoincash.Address.CashAddrFormat).toString()
     }
-    console.log({ vinputs })
 
+    console.log({receiver})
+    
+
+    const sender = new bitcoincash.PrivateKey(privkey).toAddress().toString() 
+    console.log({ sender });
+
+    const {bytesize, data} = await estimateFee({coin: 'bch', sender, receiver, amount })
+
+    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
+
+    console.log({amount_bn_sat})
+    console.log({bytesize})
+    console.log({data})
+    
     let feerate_bn_sat
     if (fee.feerate) {
-        feerate_bn_sat = new BN(bytesize_bn_byte)
+        feerate_bn_sat = new BN(fee.feerate)
     } else {
         try {
-            const response = await bchRPC('estimatefee', [])
-            feerate_bn_sat = new BN(response.data.result).multipliedBy(100000)
+            const response = await bchRPC('getnetworkinfo', [])
+            feerate_bn_sat = new BN(response.data.result.relayfee).multipliedBy(100000)
         } catch (error) {
             console.log(error.response.data)
-
             return Promise.reject({ code: 9011 })
         }
     }
     console.log({ feerate_bn_sat });
 
-    const fee_bn_sat = feerate_bn_sat.multipliedBy(bytesize_bn_byte)
-    console.log({ fee_bn_sat })
-
-    const estimatedFee = bytesize_bn_byte.multipliedBy(feerate_bn_sat)
-
-    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
-
-    const txb = new bitcoinjs.TransactionBuilder(coinlist.bch.network)
-    txb.setVersion(1)
-    txb.addOutput(receiver, amount_bn_sat.toNumber())
-    txb.addOutput(sender, sum_input_value_bn_sat.minus(amount_bn_sat).minus(estimatedFee).toNumber())
-
-    vinputs.forEach(input => {
-        txb.addInput(input.txid, input.vout)
+    const utxos = data.inputs.map(input => {
+        return {
+            txId: input.txid,
+            outputIndex: input.vout,
+            address: sender,
+            script: data.script_hex,
+            satoshis: input.value
+        }
     })
-    for (let i = 0; i < vinputs.length; i++) {
-        txb.sign(i, keyPair)
-    }
 
+    console.log({utxos})
+    
+    const tx = new bitcoincash.Transaction()
+        .from(utxos)
+        .to(receiver, amount_bn_sat.toNumber())
+        .to(sender, new BN(data.sum_input_value).minus(amount_bn_sat).minus(new BN(bytesize).multipliedBy(feerate_bn_sat)).toNumber())
+        .sign(new bitcoincash.PrivateKey(privkey))
 
-
-    const raw_tx = txb.build().toHex()
-    console.log({ raw_tx })
+    console.log({ tx: tx.toString() })
 
     try {
-        const response = await bchRPC('sendrawtransaction', [raw_tx])
-        console.log({ response })
+        const response = await bchRPC('sendrawtransaction', [tx.toString()])
+        // console.log({ response })
 
         return response.data ? Promise.resolve(response.data.result) : Promise.reject({ code: 9010 })
     } catch (error) {
-        console.log(error.response.data)
-
+        console.log(error.response)
         Promise.reject({ code: 9010 })
     }
 }
@@ -162,6 +158,8 @@ const sendLTC = async ({ privkey, receiver, amount, fee }) => {
     try {
         keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.ltc.network)
         sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.ltc.network }).address
+        console.log({ sender })
+
     } catch (error) {
         return Promise.reject({ code: 9003 })
     }
@@ -431,7 +429,7 @@ const sendERC20 = async ({ privkey, receiver, contract, amount, fee }) => {
         }
     } catch (err) {
         console.log(err)
-        
+
         return Promise.reject({ code: 9010 })
     }
 }

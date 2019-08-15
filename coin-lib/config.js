@@ -15,10 +15,7 @@ const btc = {
 }
 
 const bch = {
-    url: '192.168.1.240',
-    port: 18332,
-    username: 'silotech',
-    password: 'abc123',
+    url: 'https://bch.brick.global',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 

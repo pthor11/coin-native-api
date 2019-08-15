@@ -10,7 +10,7 @@ const call = (method, params) => {
     })
 
     return axios({
-        url: `http://${bch.url}:${bch.port}`,
+        url: bch.url,
         headers: {
             Authorization: bch.auth,
         },

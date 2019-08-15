@@ -10,7 +10,7 @@ const call = (method, params) => {
     })
 
     return axios({
-        url: `http://${btc.url}:${btc.port}`,
+        url: `https://btc.brick.global`,
         headers: {
             Authorization: btc.auth,
         },

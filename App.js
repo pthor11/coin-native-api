@@ -80,14 +80,14 @@ export default function App() {
             // })
             // console.log({ send_btc_tx })
 
-            // const send_bch_tx = await sendTX({
-            //     privkey: "KxMKp9W38evnGn217ufWXP6go8HNUexNGhA2MdSezpxqk1NPG91x",
-            //     receiver: "1MDyWzZjhtM8h1vpDzoyi3Pe2KALsyE7FM",
-            //     // fee: { feerate: 0.1 },
-            //     amount: 0.00004,
-            //     coin: 'bch'
-            // })
-            // console.log({ send_bch_tx })
+            const send_bch_tx = await sendTX({
+                privkey: "KzNf59ieLYwxfAU8YqQWx1wKqTH7xr8nZcfoZh9Tuxzh9me9MJAh",
+                receiver: "1JuR1qy5WhbtB8GQj9sac2327eMEDyQ2Z7",
+                // fee: { feerate: 1 },
+                amount: 0.00006,
+                coin: 'bch'
+            })
+            console.log({ send_bch_tx })
 
             // const send_ltc_tx = await sendTX({
             //     privkey: "cW28z1Qm1pHgVGxmzcHCFZ5cuGM2CvT3uNNNUapTpNoxnVLH2JQq",
@@ -109,9 +109,9 @@ export default function App() {
 
             // const send_etc_tx = await sendTX({
             //     privkey: "0x08b3038ce98d48d544730cc67228a26c884a645c4f09c094df67775730d8ebc6",
-            //     receiver: "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+            //     receiver: "0x8f5378377d04573c0e1a42508CaEfC22A74A6c02",
             //     // fee: { gasprice: 30000000000 },
-            //     amount: 0.01,
+            //     amount: 0.0000356,
             //     coin: 'etc'
             // })
             // console.log({ send_etc_tx })
@@ -145,8 +145,8 @@ export default function App() {
 
             // console.log({balance_trc20});
             
-            const trc10_balance = await getTRC10Balance({address: 'TYKYJkKPB9G17DiimYvahEmrQY8SN3gRmL'})
-            console.log(trc10_balance)
+            // const trc10_balance = await getTRC10Balance({address: 'TYKYJkKPB9G17DiimYvahEmrQY8SN3gRmL'})
+            // console.log(trc10_balance)
             
 
         } catch (error) {

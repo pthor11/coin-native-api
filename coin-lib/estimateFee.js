@@ -91,9 +91,9 @@ const estimateByteSizeLTC = async ({ sender, receiver, amount }) => {
 }
 
 const estimateByteSizeBCH = async ({ sender, receiver, amount }) => {
-    const amount_bn_btc = new BN(amount)
+    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
 
-    if (amount_bn_btc.isNaN()) {
+    if (amount_bn_sat.isNaN()) {
         return Promise.reject({ code: 9002 })
     }
 
@@ -110,25 +110,30 @@ const estimateByteSizeBCH = async ({ sender, receiver, amount }) => {
     }
 
     let utxos = []
+    let script_hex
     try {
         const utxos_response = await axios.get(`https://api.blockchair.com/bitcoin-cash/dashboards/address/${sender}`)
+        console.log({utxos_response: utxos_response.data})
+        
         utxos = utxos_response.data.data[sender].utxo
+        script_hex = utxos_response.data.data[sender].address.script_hex
     } catch (error) {
         return Promise.reject({ code: 9008 })
     }
-
+    console.log({utxos})
+    
     let inputs = []
     let sum_input_value = new BN(0)
     for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
-        inputs.push({ txid: utxo.transaction_hash, vout: utxo.index })
-        sum_input_value = sum_input_value.plus(new BN(utxo.value).dividedBy(100000000))
-        if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_btc)) {
+        inputs.push({ txid: utxo.transaction_hash, vout: utxo.index, value: utxo.value })
+        sum_input_value = sum_input_value.plus(new BN(utxo.value))
+        if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_sat)) {
             break
         }
     }
 
-    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value: sum_input_value.toNumber() } })
+    return inputs.length === 0 ? Promise.resolve(null) : Promise.resolve({ bytesize: inputs.length * 148 + 34 * 2 + 10, data: { inputs, sum_input_value: sum_input_value.toNumber(), script_hex} })
 }
 
 const estimateGasLimitETH = async ({ sender, receiver, amount }) => {
