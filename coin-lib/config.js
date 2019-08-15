@@ -7,10 +7,7 @@ const eth = {
 
 
 const btc = {
-    url: '192.168.1.250',
-    port: 8332,
-    username: 'silotech',
-    password: 'abc123',
+    url: 'https://btc.brick.global',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 

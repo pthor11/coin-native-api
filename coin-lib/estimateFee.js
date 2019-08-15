@@ -9,9 +9,9 @@ import coinlist from './lib/coinlist'
 import abi from 'ethereumjs-abi'
 
 const estimateByteSizeBTC = async ({ sender, receiver, amount }) => {
-    const amount_bn_btc = new BN(amount)
+    const amount_bn_sat = new BN(amount).multipliedBy(100000000)
 
-    if (amount_bn_btc.isNaN()) {
+    if (amount_bn_sat.isNaN()) {
         return Promise.reject({ code: 9002 })
     }
 
@@ -29,9 +29,12 @@ const estimateByteSizeBTC = async ({ sender, receiver, amount }) => {
 
     let utxos = []
     try {
-        const utxos_response = await axios.get(`https://chain.so/api/v2/get_tx_unspent/btctest/${sender}`)
-        utxos = utxos_response.data.data.txs
+        const utxos_response = await axios.get(`https://api.blockcypher.com/v1/btc/main/addrs/${sender}?unspentOnly=true`)
+        utxos = utxos_response.data.txrefs
+        console.log({utxos})
+        
     } catch (error) {
+        console.log(error.response.data)        
         return Promise.reject({ code: 9008 })
     }
 
@@ -39,9 +42,9 @@ const estimateByteSizeBTC = async ({ sender, receiver, amount }) => {
     let sum_input_value = new BN(0)
     for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
-        inputs.push({ txid: utxo.txid, vout: utxo.output_no })
+        inputs.push({ txid: utxo.tx_hash, vout: utxo.tx_output_n })
         sum_input_value = sum_input_value.plus(new BN(utxo.value))
-        if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_btc)) {
+        if (sum_input_value.isGreaterThanOrEqualTo(amount_bn_sat)) {
             break
         }
     }

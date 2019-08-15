@@ -24,6 +24,8 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     try {
         keyPair = bitcoinjs.ECPair.fromWIF(privkey, coinlist.btc.network)
         sender = bitcoinjs.payments.p2pkh({ pubkey: keyPair.publicKey, network: coinlist.btc.network }).address
+        console.log({ sender })
+
     } catch (error) {
         return Promise.reject({ code: 9003 })
     }
@@ -34,15 +36,18 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     try {
         const { bytesize, data: { inputs, sum_input_value } } = await estimateFee({ coin: 'btc', sender, receiver, amount })
         bytesize_bn_byte = new BN(bytesize)
-        sum_input_value_bn_sat = new BN(sum_input_value).multipliedBy(100000000)
+        sum_input_value_bn_sat = new BN(sum_input_value)
         vinputs = inputs
     } catch (error) {
         return Promise.reject(error)
     }
+    
+    console.log({bytesize_bn_byte});
+    console.log({ sum_input_value_bn_sat })
 
     let feerate_bn_sat
     if (fee.feerate) {
-        feerate_bn_sat = new BN(bytesize_bn_byte)
+        feerate_bn_sat = new BN(fee.feerate)
     } else {
         try {
             const response = await btcRPC('estimatesmartfee', [2])
@@ -60,6 +65,12 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
     const amount_bn_sat = new BN(amount).multipliedBy(100000000)
 
+    console.log({ amount_bn_sat })
+    console.log({ change: sum_input_value_bn_sat.minus(amount_bn_sat).minus(estimatedFee) })
+
+    console.log({ vinputs })
+
+
     const txb = new bitcoinjs.TransactionBuilder(coinlist.btc.network)
     txb.setVersion(1)
     txb.addOutput(receiver, amount_bn_sat.toNumber())
@@ -74,10 +85,13 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
     const raw_tx = txb.build().toHex()
 
+    console.log({raw_tx})
+    
     try {
         const response = await btcRPC('sendrawtransaction', [raw_tx])
         return response.data ? Promise.resolve(response.data.result) : Promise.reject({ code: 9010 })
     } catch (error) {
+        console.log(error.response)
         Promise.reject({ code: 9010 })
     }
 }
