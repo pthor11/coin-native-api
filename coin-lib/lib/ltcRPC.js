@@ -10,9 +10,9 @@ const call = (method, params) => {
     })
 
     return axios({
-        url: `http://${ltc.url}:${ltc.port}`,
+        url: ltc.url,
         headers: {
-            Authorization: "Basic c2lsb3RlY2g6YWJjMTIz",
+            Authorization: ltc.auth,
         },
         data,
         method: 'post'

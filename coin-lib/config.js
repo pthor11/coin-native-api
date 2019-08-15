@@ -20,10 +20,7 @@ const bch = {
 }
 
 const ltc = {
-    url: '192.168.1.250',
-    port: 9332,
-    username: 'silotech',
-    password: 'abc123',
+    url: 'https://ltc.brick.global',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz'
 }
 
