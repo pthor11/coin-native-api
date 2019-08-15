@@ -74,11 +74,20 @@ export default function App() {
             // const send_btc_tx = await sendTX({
             //     privkey: "cRWEzk4GPB2CRmryDPm91vKiiQbrAdM3WuSpddh3kjSiJHeZQnvt",
             //     receiver: "mxHTHCzyBFK8ZK3BXszJZQCeixtzdumht4",
-            //     fee: { feerate: 0.1 },
+            //     fee: { feerate: 1 },
             //     amount: 0.0001,
             //     coin: 'btc'
             // })
             // console.log({ send_btc_tx })
+
+            const send_btc_tx = await sendTX({
+                privkey: "L4UiCBBBMWEsERxUmtgGbEyo7j3cBMn9qa6eoF9Qk7MY9K17P8Zi",
+                receiver: "16mJy93UkJboTZgVzfcVKpN3UzQaogHgHN",
+                fee: { feerate: 1 },
+                amount: 0.00001,
+                coin: 'btc'
+            })
+            console.log({ send_btc_tx })
 
             // const send_bch_tx = await sendTX({
             //     privkey: "KzNf59ieLYwxfAU8YqQWx1wKqTH7xr8nZcfoZh9Tuxzh9me9MJAh",
@@ -89,14 +98,14 @@ export default function App() {
             // })
             // console.log({ send_bch_tx })
 
-            const send_ltc_tx = await sendTX({
-                privkey: "TAZUJUR1sFyDBp2TxfxqzpVzCei6BT5QAdQS7uLg93DUziMYgeMf",
-                receiver: "LUkjD5MTDJ56GXZrrSceCK7hSdCQGYrUx7",
-                fee: { feerate: 1 },
-                amount: 0.001,
-                coin: 'ltc'
-            })
-            console.log({ send_ltc_tx })
+            // const send_ltc_tx = await sendTX({
+            //     privkey: "TAZUJUR1sFyDBp2TxfxqzpVzCei6BT5QAdQS7uLg93DUziMYgeMf",
+            //     receiver: "LUkjD5MTDJ56GXZrrSceCK7hSdCQGYrUx7",
+            //     fee: { feerate: 1 },
+            //     amount: 0.001,
+            //     coin: 'ltc'
+            // })
+            // console.log({ send_ltc_tx })
 
             // const send_eth_tx = await sendTX({
             //     privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
