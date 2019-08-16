@@ -1,8 +1,7 @@
 const eth = {
-    url: '192.168.1.250',
-    port: 8545,
+    url: 'https://eth.brick.global',
     auth: 'Basic c2lsb3RlY2g6YWJjMTIz',
-    chain: 'kovan'
+    chain: 'mainnet'
 }
 
 

@@ -1,9 +1,20 @@
 import tronweb from './tronweb'
 import {tron} from '../config'
 
-export default new tronweb({
+const tronNode=  new tronweb({
     fullNode: tron.full_node,
     solidityNode: tron.solidity_node,
     eventServer: tron.event_server,
-    privateKey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea'
+    privateKey: '82049202137895895ca667cbc8eeb110d98180b7a4a83c765a74869cfd60995a'
 })
+
+tronNode.newFromPrivateKey = (privateKey) => {
+    return new tronweb({
+        fullNode: tron.full_node,
+        solidityNode: tron.solidity_node,
+        eventServer: tron.event_server,
+        privateKey
+    })
+}
+
+export default tronNode

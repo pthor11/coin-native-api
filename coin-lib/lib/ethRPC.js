@@ -10,10 +10,11 @@ const call = (method, params) => {
     })
 
     return axios({
-        url: `https://kovan.infura.io/v3/031b93b2f6af43d9898bc9eefb11d35e`,//`http://${eth.url}:${eth.port}`,
+        url: eth.url,
         data,
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': eth.auth,
         },
         method: 'post'
     })
@@ -30,10 +31,11 @@ call.batch = (requestArray) => {
     }))
     
     return axios({
-        url: `https://mainnet.infura.io/v3/031b93b2f6af43d9898bc9eefb11d35e`,//`http://${eth.url}:${eth.port}`,
+        url: eth.url,
         data,
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': eth.auth,
         },
         method: 'post'
     })

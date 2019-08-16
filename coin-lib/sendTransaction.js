@@ -1,7 +1,6 @@
 import '../shim'
 import { Buffer } from 'buffer'
 import * as  bitcoinjs from 'bitcoinjs-lib'
-// import * as bitcoincashjs from 'bitcoinjs-lib-cash'
 import * as bitcoincash from './lib/bitcoincashjs.0.1.7.min'
 import ethUtil from './lib/ethereumjs-util'
 import tronNode from './lib/tronNode'
@@ -16,6 +15,8 @@ import estimateFee from './estimateFee'
 import BN from 'bignumber.js'
 import coinlist from './lib/coinlist'
 import { eth } from './config'
+import getTRC10Info from './getTRC10Info'
+import { RectButton } from 'react-native-gesture-handler';
 
 const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
@@ -41,8 +42,8 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
     } catch (error) {
         return Promise.reject(error)
     }
-    
-    console.log({bytesize_bn_byte});
+
+    console.log({ bytesize_bn_byte });
     console.log({ sum_input_value_bn_sat })
 
     let feerate_bn_sat
@@ -85,8 +86,8 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 
     const raw_tx = txb.build().toHex()
 
-    console.log({raw_tx})
-    
+    console.log({ raw_tx })
+
     try {
         const response = await btcRPC('sendrawtransaction', [raw_tx])
         return response.data ? Promise.resolve(response.data.result) : Promise.reject({ code: 9010 })
@@ -99,27 +100,27 @@ const sendBTC = async ({ privkey, receiver, amount, fee }) => {
 const sendBCH = async ({ privkey, receiver, amount, fee }) => {
 
     if (receiver.length !== 34 && receiver.length !== 54) {
-        return Promise.reject({error: 9004})
+        return Promise.reject({ error: 9004 })
     }
 
-    if (receiver.length === 54 && receiver.substring(0, 12) === 'bitcoincash:') {        
+    if (receiver.length === 54 && receiver.substring(0, 12) === 'bitcoincash:') {
         receiver = bitcoincash.Address.fromString(receiver, 'livenet', 'pubkeyhash', bitcoincash.Address.CashAddrFormat).toString()
     }
 
-    console.log({receiver})
-    
+    console.log({ receiver })
 
-    const sender = new bitcoincash.PrivateKey(privkey).toAddress().toString() 
+
+    const sender = new bitcoincash.PrivateKey(privkey).toAddress().toString()
     console.log({ sender });
 
-    const {bytesize, data} = await estimateFee({coin: 'bch', sender, receiver, amount })
+    const { bytesize, data } = await estimateFee({ coin: 'bch', sender, receiver, amount })
 
     const amount_bn_sat = new BN(amount).multipliedBy(100000000)
 
-    console.log({amount_bn_sat})
-    console.log({bytesize})
-    console.log({data})
-    
+    console.log({ amount_bn_sat })
+    console.log({ bytesize })
+    console.log({ data })
+
     let feerate_bn_sat
     if (fee.feerate) {
         feerate_bn_sat = new BN(fee.feerate)
@@ -144,8 +145,8 @@ const sendBCH = async ({ privkey, receiver, amount, fee }) => {
         }
     })
 
-    console.log({utxos})
-    
+    console.log({ utxos })
+
     const tx = new bitcoincash.Transaction()
         .from(utxos)
         .to(receiver, amount_bn_sat.toNumber())
@@ -189,8 +190,8 @@ const sendLTC = async ({ privkey, receiver, amount, fee }) => {
     } catch (error) {
         return Promise.reject(error)
     }
-    
-    console.log({bytesize_bn_byte});
+
+    console.log({ bytesize_bn_byte });
     console.log({ sum_input_value_bn_sat })
 
     let feerate_bn_sat
@@ -233,8 +234,8 @@ const sendLTC = async ({ privkey, receiver, amount, fee }) => {
 
     const raw_tx = txb.build().toHex()
 
-    console.log({raw_tx})
-    
+    console.log({ raw_tx })
+
     try {
         const response = await ltcRPC('sendrawtransaction', [raw_tx])
         return response.data ? Promise.resolve(response.data.result) : Promise.reject({ code: 9010 })
@@ -275,6 +276,8 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
                 return Promise.reject({ code: 9005 })
             }
         } catch (error) {
+            console.log(error);
+
             return Promise.reject({ code: 9005 })
         }
 
@@ -353,6 +356,8 @@ const sendETH = async ({ privkey, receiver, amount, fee }) => {
                 return Promise.reject({ code: 9010 })
             }
         } catch (error) {
+            console.log();
+
             return Promise.reject({ code: 9010 })
         }
     } catch (err) {
@@ -593,6 +598,44 @@ const sendTRX = async ({ privkey, receiver, amount }) => {
     }
 }
 
+const sendTRC10 = async ({ privkey, receiver, trc10, amount }) => {
+    let precision
+    try {
+        const info = await getTRC10Info({ id: trc10 })
+        precision = info.precision
+    } catch (error) {
+        return Promise.reject({ code: 9017 })
+    }
+    console.log({ precision })
+    try {
+        const tx = await tronNode.trx.sendToken(receiver, new BN(amount).multipliedBy(new BN(10).pow(precision)).toNumber(), trc10, privkey)
+        return tx.transaction.txID
+    } catch (error) {
+        console.log({ error })
+        return Promise.reject({ code: 9010 })
+    }
+}
+
+const sendTRC20 = async ({privkey, receiver, trc20, amount}) => {
+    try {
+        const sender = tronNode.address.fromPrivateKey(privkey)
+        console.log({sender})
+        
+        const token = await tronNode.newFromPrivateKey(privkey).contract().at(trc20)
+        const [decimals, balanceOf] = await Promise.all([
+            token.decimals().call(),
+            token.balanceOf(sender).call()
+        ])
+        const transfer = await token.transfer(receiver, 100).send()
+        console.log({transfer})
+        
+        return {decimals, balance: new BN(balanceOf).toNumber()}
+    } catch (error) {
+        console.log(error);
+        return Promise.reject({ code: 9017 })
+    }
+}
+
 const sendTX = async ({ privkey, receiver, contract, amount, fee = {}, coin }) => {
     if (!coin || !privkey || !receiver || !amount) {
         return Promise.reject({ code: 9000 })
@@ -612,6 +655,10 @@ const sendTX = async ({ privkey, receiver, contract, amount, fee = {}, coin }) =
             return sendERC20({ privkey, receiver, contract, amount, fee })
         case 'trx':
             return sendTRX({ privkey, receiver, amount })
+        case 'trc10':
+            return sendTRC10({ privkey, receiver, amount, trc10: contract })
+        case 'trc20':
+            return sendTRC20({ privkey, receiver, amount, trc20: contract })
         default:
             return Promise.reject({ code: 9001 })
     }

@@ -80,14 +80,14 @@ export default function App() {
             // })
             // console.log({ send_btc_tx })
 
-            const send_btc_tx = await sendTX({
-                privkey: "L4UiCBBBMWEsERxUmtgGbEyo7j3cBMn9qa6eoF9Qk7MY9K17P8Zi",
-                receiver: "16mJy93UkJboTZgVzfcVKpN3UzQaogHgHN",
-                fee: { feerate: 1 },
-                amount: 0.00001,
-                coin: 'btc'
-            })
-            console.log({ send_btc_tx })
+            // const send_btc_tx = await sendTX({
+            //     privkey: "L4UiCBBBMWEsERxUmtgGbEyo7j3cBMn9qa6eoF9Qk7MY9K17P8Zi",
+            //     receiver: "16mJy93UkJboTZgVzfcVKpN3UzQaogHgHN",
+            //     fee: { feerate: 1 },
+            //     amount: 0.00001,
+            //     coin: 'btc'
+            // })
+            // console.log({ send_btc_tx })
 
             // const send_bch_tx = await sendTX({
             //     privkey: "KzNf59ieLYwxfAU8YqQWx1wKqTH7xr8nZcfoZh9Tuxzh9me9MJAh",
@@ -108,10 +108,10 @@ export default function App() {
             // console.log({ send_ltc_tx })
 
             // const send_eth_tx = await sendTX({
-            //     privkey: "0xA777E56259DDE78FAD49B90FAE938D30EBBB27AE9D9726B622DF8F6138C006C8",
-            //     receiver: "0xf457aAf330a34Aba49688348d381caAaDC094023",
+            //     privkey: "0x9b2e58629818df6b81f5fc0f6e5de4f27547bc82a1e24abfbe6234f138715b61",
+            //     receiver: "0xC46C628e9bEf139FD43bb1a7828A13E2134E33Cb",
             //     // fee: { gasprice: 10000000000 },
-            //     amount: 0.000528,
+            //     amount: 0.00001,
             //     coin: 'eth'
             // })
             // console.log({ send_eth_tx })
@@ -133,12 +133,30 @@ export default function App() {
 
             // const tx = await sendTX({
             //     coin: 'trx',
-            //     receiver: 'TH1TKfZb3zmkF3K7Mg9jQw3skhRT8oEbHG',
-            //     privkey: '7886ee3ed3d1627840d91842368fbdb6d12eaef7af422b7e268a461c6aeafeea',
-            //     amount: 0.0001
+            //     receiver: 'THXd33REvcer7rRbJhGDYzEkJmLC1yGhLF',
+            //     privkey: '82049202137895895ca667cbc8eeb110d98180b7a4a83c765a74869cfd60995a',
+            //     amount: 0.01
             // })
-
             // console.log({tx})
+
+            // const trc10_tx = await sendTX({
+            //     coin: 'trc10',
+            //     receiver: 'THXd33REvcer7rRbJhGDYzEkJmLC1yGhLF',
+            //     contract: 1002573,
+            //     amount: 1,
+            //     privkey: '82049202137895895ca667cbc8eeb110d98180b7a4a83c765a74869cfd60995a'
+            // })
+            // console.log({trc10_tx})
+
+            const trc20_tx = await sendTX({
+                coin: 'trc20',
+                receiver: 'THXd33REvcer7rRbJhGDYzEkJmLC1yGhLF',
+                contract: "TVQ6jYV5yTtRsKcD8aRc1a4Kei4V45ixLn",
+                amount: 1,
+                privkey: '82049202137895895ca667cbc8eeb110d98180b7a4a83c765a74869cfd60995a'
+            })
+            console.log({trc20_tx})
+            
 
             // const usdt = await getTokenInfo({address: "0xdac17f958d2ee523a2206206994597c13d831ec7"})
             // const akc = await getTokenInfo({address: "0x904C3dEA0531Faf6326bACFB2a64Bce23b210Bf9"})
